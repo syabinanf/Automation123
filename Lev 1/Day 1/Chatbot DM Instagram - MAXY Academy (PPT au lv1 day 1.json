@@ -1,0 +1,688 @@
+{
+  "name": "Chatbot DM Instagram - MAXY Academy",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('IG Webhook1').item.json.query.hub_challenge }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        1024
+      ],
+      "id": "6bbab18e-08d8-4260-8007-f9438d1e97f0",
+      "name": "Respond to Webhook (Challenge)"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        112,
+        1232
+      ],
+      "id": "6c9201f4-6102-4638-a1db-d1975ccf84f1",
+      "name": "Respond OK (ack ke Meta)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "sender_psid",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "recipient_id",
+              "value": "={{ $json.body.entry[0].messaging[0].recipient.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "message_text",
+              "value": "={{ $json.body.entry[0].messaging[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f4",
+              "name": "timestamp",
+              "value": "={{ $json.body.entry[0].messaging[0].timestamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        1392
+      ],
+      "id": "7199df0f-8f43-45f3-98d8-012c474c65fd",
+      "name": "Ambil Data DM",
+      "notes": "Parsing payload webhook DM Instagram. Kalau pesan berupa attachment/sticker (bukan teks), message_text akan kosong -> ditangani di node 'Ada Pesan Teks?'."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "t1",
+              "leftValue": "={{ $json.message_text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "name": "filter.operator.notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        1392
+      ],
+      "id": "dc160651-b8c1-4b88-827b-ec8eb6c32b0b",
+      "name": "Ada Pesan Teks?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        592,
+        1536
+      ],
+      "id": "a53845dc-4cf7-4ab6-918c-6ae7cbe91590",
+      "name": "Abaikan (non-text event)"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        1552
+      ],
+      "id": "15297a42-afc5-4c14-865d-1cb703171676",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sXNBAuzSIZhsEtCQgGtOyTr_ef2QcjCX4nBFQxPKnyU",
+          "mode": "list",
+          "cachedResultName": "History Chat",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sXNBAuzSIZhsEtCQgGtOyTr_ef2QcjCX4nBFQxPKnyU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sXNBAuzSIZhsEtCQgGtOyTr_ef2QcjCX4nBFQxPKnyU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.session_id }}",
+            "user_message": "={{ $json.user_message }}",
+            "ai_message": "={{ $json.ai_message }}",
+            "timestamp": "={{ $json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_message",
+              "displayName": "user_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_message",
+              "displayName": "ai_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2544,
+        1344
+      ],
+      "id": "f34e82ac-058c-43de-904b-a2a12afb7645",
+      "name": "Simpan Riwayat Chat",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "ig-dm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        1168
+      ],
+      "id": "8817a939-448a-4622-bb9d-f9e798000147",
+      "name": "IG Webhook1",
+      "webhookId": "ig-dm-webhook-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "v1",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "v2",
+              "leftValue": "={{ $json.query.hub_verify_token }}",
+              "rightValue": "testest",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        1024
+      ],
+      "id": "ae131a40-c577-47c7-bccc-959669442a9d",
+      "name": "Verifikasi Webhook1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1sXNBAuzSIZhsEtCQgGtOyTr_ef2QcjCX4nBFQxPKnyU",
+          "mode": "list",
+          "cachedResultName": "History Chat",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sXNBAuzSIZhsEtCQgGtOyTr_ef2QcjCX4nBFQxPKnyU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sXNBAuzSIZhsEtCQgGtOyTr_ef2QcjCX4nBFQxPKnyU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        592,
+        1344
+      ],
+      "id": "f0575da1-a84c-426a-b936-9d70ede8a21f",
+      "name": "Ambil Riwayat Chat1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "s1",
+              "leftValue": "={{ $json.session_id }}",
+              "rightValue": "={{ $('Ambil Data DM').item.json.sender_psid }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        1344
+      ],
+      "id": "5ed8a915-2195-4404-aae7-9186043864a7",
+      "name": "Saring Riwayat Saya1",
+      "alwaysOutputData": true,
+      "notes": "alwaysOutputData ON — kalau ini pesan pertama dari user ini, hasilnya nol baris, tapi alur harus tetap lanjut ke AI Agent."
+    },
+    {
+      "parameters": {
+        "maxItems": 10,
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        1344
+      ],
+      "id": "dd263277-33f7-4984-9c13-7dbfb6a67b21",
+      "name": "Batasi 10 Terakhir1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "r1",
+              "name": "baris_riwayat",
+              "value": "={{ $json.user_message ? ('User: ' + $json.user_message + '\\nAI: ' + $json.ai_message) : '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1312,
+        1344
+      ],
+      "id": "42a7d36c-21f9-4560-a5d4-1e1d3518bc75",
+      "name": "Format Baris Riwayat1"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "baris_riwayat"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        1344
+      ],
+      "id": "67d998b8-0300-42a0-8c9d-30564d20303c",
+      "name": "Gabungkan Riwayat1",
+      "notes": "Kalau nama field hasil bukan 'baris_riwayat', sesuaikan referensi di node AI Agent (text field)."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Riwayat percakapan sebelumnya dengan user ini:\n{{ $json.baris_riwayat || '(belum ada riwayat sebelumnya, ini pesan pertama)' }}\n\nPesan baru dari user:\n{{ $('Ambil Data DM').item.json.message_text }}",
+        "options": {
+          "systemMessage": "# MAXY Academy AI Customer Service Playbook\n\n## Role\nKamu adalah AI Customer Service MAXY Academy yang bertugas membantu calon peserta mendapatkan informasi mengenai Bootcamp, Workshop, dan program pelatihan digital. Berikan jawaban yang ramah, profesional, dan mudah dipahami.\n\n## Objective\n- Menjawab pertanyaan berdasarkan Knowledge Base yang tersedia.\n- Membantu calon peserta memahami program yang ditawarkan.\n- Mengarahkan pengguna untuk melakukan pendaftaran apabila tertarik.\n- Menghubungkan pengguna ke Human Agent jika informasi tidak tersedia atau membutuhkan bantuan lebih lanjut.\n\n## Communication Style\n- Gunakan Bahasa Indonesia.\n- Sapa pengguna dengan \"Kak\".\n- Gunakan nada yang ramah, sopan, dan antusias.\n- Jawaban singkat dan jelas (maksimal 3 paragraf).\n- Gunakan emoji secukupnya agar terasa natural.\n\n## Rules\n- Selalu gunakan informasi dari Knowledge Base sebagai sumber jawaban.\n- Jangan mengarang informasi yang tidak tersedia.\n- Jangan memberikan harga, jadwal, atau promo yang tidak terdapat pada Knowledge Base.\n- Jika tidak yakin terhadap jawaban, jangan menebak.\n- Jika pertanyaan berada di luar Knowledge Base, arahkan ke Human Agent.\n\n## Greeting\nJika pengguna mengucapkan \"Halo\", \"Hi\", \"Pagi\", \"Siang\", atau \"Malam\", balas dengan:\n\"Halo Kak 👋\nSelamat datang di MAXY Academy.\nSaya siap membantu memberikan informasi mengenai bootcamp, workshop, jadwal, sertifikat, maupun proses pendaftaran.\nSilakan sampaikan pertanyaan Kakak 😊\"\n\n## Responding Guidelines\n- Jika pertanyaan mengenai harga, gunakan informasi pada Knowledge Base lalu tawarkan bantuan mengenai jadwal atau pendaftaran.\n- Jika pertanyaan mengenai jadwal, jawab sesuai Knowledge Base lalu tanyakan program yang diminati.\n- Jika pertanyaan mengenai sertifikat, jelaskan sesuai Knowledge Base.\n- Jika pertanyaan mengenai metode pembayaran atau pendaftaran, jawab berdasarkan Knowledge Base.\n- Jika pengguna ingin mendaftar, arahkan ke website atau admin untuk proses selanjutnya.\n\n## Escalation Rules\nApabila:\n- AI tidak menemukan jawaban pada Knowledge Base.\n- Pengguna meminta berbicara dengan admin.\n- Pengguna mengajukan kerja sama, komplain, refund, atau pertanyaan khusus.\n- Pengguna meminta informasi yang tidak dimiliki AI.\n\nBalas dengan:\n\"Maaf Kak, saya belum memiliki informasi tersebut.\nSaya akan meneruskan percakapan ini kepada tim Customer Service agar dapat membantu lebih lanjut.\nMohon tunggu sebentar ya 😊\"\nKemudian lakukan handoff ke Human Agent.\n\n## Closing\nJika percakapan telah selesai, balas dengan:\n\"Terima kasih sudah menghubungi MAXY Academy 😊\nSemoga informasi yang saya berikan bermanfaat.\nSampai jumpa di kelas dan semoga harinya menyenangkan!\"\n\n## Knowledge Base\n(Belum ada data Knowledge Base yang terhubung ke agent ini. Jika belum ada informasi spesifik mengenai harga, jadwal, sertifikat, daftar program, atau promo yang tersedia di sini, JANGAN mengarang jawaban. Gunakan Escalation Rules dan arahkan pengguna ke Human Agent.)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        1344
+      ],
+      "id": "170d57bc-46f9-4117-82ba-9e5211fee2ea",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v24.0/{{ $('Ambil Data DM').item.json.recipient_id }}/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "IGAAT4eWPE18lBZAGJwUl9HLVNiQzRHckE0RHlSVG9zWUtoZAGxtRFVzUWV6Q1VoMVJVdW1ZAMU81X0xtRms4cmVyY0VUaERncTA3U081LWhIcVFrUEJpY3RoZAi1ldTNCUWtUZAlowbUhOUVBYS3RxeWk5OUlvcG5vblJEVTZAiZATNLZAwZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Ambil Data DM').item.json.sender_psid }, messaging_type: 'RESPONSE', message: { text: $json.output } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2064,
+        1344
+      ],
+      "id": "16d44a44-3987-4f91-a0c6-ae24f187bc32",
+      "name": "Kirim DM Instagram1",
+      "notes": "PENTING: jangan hardcode access_token di sini secara permanen. Ganti jadi credential (HTTP Header/Query Auth) supaya nggak ke-expose kalau workflow di-share/export."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1",
+              "name": "session_id",
+              "value": "={{ $('Ambil Data DM').item.json.sender_psid }}",
+              "type": "string"
+            },
+            {
+              "id": "d2",
+              "name": "user_message",
+              "value": "={{ $('Ambil Data DM').item.json.message_text }}",
+              "type": "string"
+            },
+            {
+              "id": "d3",
+              "name": "ai_message",
+              "value": "={{ $('AI Agent1').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "d4",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2304,
+        1344
+      ],
+      "id": "40986f73-1af4-4c73-be18-9a19c2725f52",
+      "name": "Siapkan Data Riwayat1",
+      "notes": "Field di sini namanya harus PERSIS sama dengan header kolom di sheet chat_history."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ambil Data DM": {
+      "main": [
+        [
+          {
+            "node": "Ada Pesan Teks?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ada Pesan Teks?": {
+      "main": [
+        [
+          {
+            "node": "Ambil Riwayat Chat1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Abaikan (non-text event)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Verifikasi Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond OK (ack ke Meta)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ambil Data DM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifikasi Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook (Challenge)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Riwayat Chat1": {
+      "main": [
+        [
+          {
+            "node": "Saring Riwayat Saya1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saring Riwayat Saya1": {
+      "main": [
+        [
+          {
+            "node": "Batasi 10 Terakhir1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batasi 10 Terakhir1": {
+      "main": [
+        [
+          {
+            "node": "Format Baris Riwayat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Baris Riwayat1": {
+      "main": [
+        [
+          {
+            "node": "Gabungkan Riwayat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gabungkan Riwayat1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Kirim DM Instagram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim DM Instagram1": {
+      "main": [
+        [
+          {
+            "node": "Siapkan Data Riwayat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siapkan Data Riwayat1": {
+      "main": [
+        [
+          {
+            "node": "Simpan Riwayat Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1e755fbb-3c41-425c-afa7-6c694194d598",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6d18c21e74ebb3cdb26022a26ae9b002bab6b1c78d59b7e91d9fb0e15411b71"
+  },
+  "nodeGroups": [],
+  "id": "BAl7NORQMT9IzcR7",
+  "tags": []
+}

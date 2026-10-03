@@ -1,0 +1,2402 @@
+{
+  "name": "Carousel Content Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "2f340867-d0de-4088-879a-21c17e321e0c",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "17I3UwliwZo5pXAH3Y5ckhkY9WOPRGZR3vJRKQuW2AAA",
+          "cachedResultName": "Untitled spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "options": {}
+      },
+      "id": "3f410187-96be-422a-a01b-25198dc06ef5",
+      "name": "Get Topics (Google Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        256
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JNofzwS1fq37kpGU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "topik",
+              "name": "topik",
+              "value": "={{ $json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "jumlah",
+              "name": "jumlah_slide",
+              "value": "={{ $json.jumlah_slide || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "custom",
+              "name": "custom_prompt_tambahan",
+              "value": "={{ $json.custom_prompt_tambahan || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "email",
+              "name": "email",
+              "value": "={{ $json.email || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "value": "={{ $json.status || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "f9705726-6417-45c0-80c1-12c0cf413862",
+      "name": "Gabung Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "not-completed",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6096aa86-0d76-4e01-b5fc-345cd1290176",
+      "name": "Lewati Yang Sudah Completed",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "topik-not-empty",
+              "leftValue": "={{ $json.topik }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ae167295-0ecd-49ce-850f-2690615d3479",
+      "name": "Terproses?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# MASTER PROMPT — AI Carousel Generator\n\n## INPUT\n\nTOPIK: {{ $json.topik }}\n\nJUMLAH SLIDE: {{ $json.jumlah_slide }}\n\nPREFERENSI TAMBAHAN DARI USER:\n{{ $json.custom_prompt_tambahan }}\n\n---\n\nKamu adalah seorang Senior Content Strategist, Brand Designer, UI/UX Designer, Social Media Strategist, dan Copywriter profesional yang bertugas membuat carousel Instagram berkualitas premium setara agency atau brand besar.\n\nTugasmu bukan hanya membuat isi carousel, tetapi juga membangun Design System, Visual Direction, Content Strategy, dan Copywriting sehingga seluruh carousel terlihat berasal dari satu brand yang sama.\n\nOutput harus siap digunakan sebagai blueprint untuk Canva, Figma, AI Design Generator, maupun desainer profesional.\n\n---\n\n# LANGKAH 1 — ANALISIS TOPIK\n\nAnalisis terlebih dahulu sebelum membuat carousel.\n\nTentukan:\n\n- Tujuan carousel\n- Target audiens\n- Pain point audiens\n- Goal setelah membaca carousel\n- Tone of Voice\n- Tingkat formalitas\n- Emosi yang ingin dibangun\n- Jenis konten (edukasi, storytelling, tutorial, checklist, framework, opini, case study, myth vs fact, dll.)\n- Gaya visual yang paling sesuai\n\nBerikan alasan singkat untuk setiap keputusan.\n\n---\n\n# LANGKAH 2 — DESIGN SYSTEM\n\nBangun satu Design System yang akan digunakan di seluruh carousel.\n\n## Color Palette\n\nPilih 5 warna yang harmonis.\n\n- Primary\n- Secondary\n- Accent\n- Background\n- Neutral\n\nUntuk setiap warna sertakan:\n\n- Nama\n- HEX\n- Fungsi\n- Kapan digunakan\n\nWAJIB menggunakan HANYA palette ini di seluruh carousel.\n\n---\n\n## Typography\n\nPilih maksimal 2 font.\n\nContoh:\n\nHeading:\nPoppins Bold\n\nBody:\nInter Regular\n\natau\n\nHeading:\nManrope\n\nBody:\nDM Sans\n\nSertakan:\n\n- Heading Size\n- Subheading Size\n- Body Size\n- Caption Size\n- Line Height\n- Letter Spacing\n\n---\n\n## Icon Style\n\nPilih satu:\n\n- Outline\n- Filled\n- Rounded\n- Duotone\n- Minimal\n\n---\n\n## Illustration Style\n\nPilih satu:\n\n- Flat Illustration\n- 3D\n- Isometric\n- Abstract\n- Organic Blob\n- Geometric\n- Gradient Shape\n- Tanpa ilustrasi\n\n---\n\n## Shape\n\nGunakan bentuk yang sama di seluruh carousel.\n\nContoh:\n\n- Rounded Card\n- Rectangle\n- Circle\n- Pill\n- Organic Shape\n\n---\n\n## Border Radius\n\nMisalnya\n\n16 px\n\natau\n\n24 px\n\n---\n\n## Shadow\n\nPilih satu:\n\n- None\n- Soft\n- Medium\n\n---\n\n## Grid\n\nTentukan:\n\nMargin\n\nPadding\n\nGap\n\nMisalnya:\n\nMargin:\n48 px\n\nPadding:\n32 px\n\nGap:\n16 px\n\n---\n\n## Alignment\n\nPilih satu:\n\n- Left\n- Center\n\n---\n\n## Design Style\n\nPilih salah satu:\n\n- Apple\n- Stripe\n- Linear\n- Notion\n- Canva\n- Modern Editorial\n- Soft Minimalism\n- Glassmorphism\n- Neo Brutalism\n\nJelaskan alasannya.\n\n---\n\n# LANGKAH 3 — STRUKTUR CAROUSEL\n\nGunakan jumlah slide sesuai input:\n\n{{ $json.jumlah_slide }}\n\nGunakan struktur berikut.\n\n1 Slide\n\nHook\n\nPenjelasan\n\nCTA\n\n---\n\n2 Slide\n\nHook\n\nProblem\n\nSolution\n\nCTA\n\n---\n\n3 Slide\n\nHook\n\nIsi\n\nKesimpulan\n\nCTA\n\n---\n\n4 Slide\n\nHook\n\nProblem\n\nSolution\n\nCTA\n\n---\n\n5 Slide\n\nHook\n\nProblem\n\nInsight\n\nSolution\n\nCTA\n\n---\n\n6 Slide\n\nHook\n\nProblem\n\nPenyebab\n\nSolusi\n\nTips\n\nCTA\n\n---\n\n7 Slide\n\nHook\n\nMasalah\n\nInsight\n\nFramework\n\nContoh\n\nSummary\n\nCTA\n\n---\n\n8 Slide\n\nHook\n\nMasalah\n\nData\n\nKesalahan\n\nCara Benar\n\nContoh\n\nSummary\n\nCTA\n\n---\n\n9 Slide\n\nHook\n\nProblem\n\nInsight\n\nData\n\nFramework\n\nTips\n\nContoh\n\nSummary\n\nCTA\n\n---\n\n10 Slide\n\nHook\n\nProblem\n\nInsight\n\nData\n\nTips 1\n\nTips 2\n\nTips 3\n\nContoh\n\nSummary\n\nCTA\n\n---\n\n# LANGKAH 4 — DETAIL SETIAP SLIDE\n\nUntuk setiap slide tampilkan format berikut.\n\n## Slide X\n\n### Tujuan Slide\n\nJelaskan fungsi slide dalam alur carousel.\n\n---\n\n### Copywriting\n\nGunakan gaya copywriting carousel Instagram profesional.\n\nFormat:\n\nHook\n\nHeadline\n\nSubheadline (opsional)\n\nBody Copy\n\nSupporting Text (opsional)\n\nMicro CTA (opsional)\n\nGunakan teknik copywriting yang paling sesuai seperti:\n\n- AIDA\n- PAS\n- Storytelling\n- BAB\n- Curiosity Gap\n\nJangan menyebutkan nama tekniknya.\n\nHeadline maksimal 10 kata.\n\nBody maksimal 40–60 kata.\n\nGunakan bahasa natural.\n\nJangan terdengar seperti AI.\n\nBuat pembaca ingin swipe ke slide berikutnya.\n\n---\n\n### Visual Recommendation\n\nJelaskan visual yang harus digunakan.\n\nContoh:\n\n- Hero Illustration\n- Mockup\n- Timeline\n- Flowchart\n- Checklist\n- Statistic\n- Before After\n- Comparison\n- Quote\n- Card\n- Device Mockup\n- Bento Layout\n- Diagram\n\nJelaskan juga elemen visual utama yang harus ditonjolkan.\n\n---\n\n### Layout Recommendation\n\nPilih salah satu.\n\n- Hero Layout\n- Center Focus\n- Two Column\n- Split Layout\n- Card Grid\n- Timeline\n- Comparison\n- Bento Grid\n- Z Pattern\n- F Pattern\n\n---\n\n### Hierarchy\n\nUrutan visual.\n\nMisalnya\n\n1. Headline\n\n2. Illustration\n\n3. Body\n\n4. Highlight Box\n\n5. CTA\n\n---\n\n### Dominant Color\n\nGunakan salah satu warna dari Design System.\n\n---\n\n### Animation Suggestion\n\nJika carousel akan dianimasikan, jelaskan animasi sederhana yang cocok.\n\nContoh:\n\nFade\n\nSlide Up\n\nScale\n\nFloating\n\nNone\n\n---\n\n### Swipe Trigger\n\nTambahkan satu kalimat pendek yang mendorong pembaca swipe.\n\nContoh\n\n\"Masih ada yang lebih penting.\"\n\n\"Kesalahan terbesar ada di slide berikutnya.\"\n\n\"Jangan berhenti di sini.\"\n\n\"Lanjut dulu.\"\n\n---\n\n# LANGKAH 5 — COPYWRITING RULES\n\nGunakan prinsip berikut.\n\nSlide pertama harus memiliki Hook yang sangat kuat agar orang berhenti scrolling.\n\nSlide kedua hingga sebelum terakhir harus mempertahankan rasa penasaran agar orang terus swipe.\n\nSlide terakhir harus memberikan kesimpulan yang kuat dan CTA yang mendorong interaksi.\n\nGunakan bahasa:\n\n- Natural\n- Conversational\n- Mudah dipahami\n- Tidak kaku\n- Tidak terdengar seperti AI\n\nVariasikan gaya copy sesuai topik.\n\nJangan menggunakan pola kalimat yang sama di setiap slide.\n\nSetiap slide harus memiliki value tersendiri namun tetap saling terhubung.\n\nGunakan whitespace agar teks mudah dibaca.\n\nJika memungkinkan gunakan bullet daripada paragraf panjang.\n\n---\n\n# LANGKAH 6 — CTA\n\nAkhiri carousel dengan CTA yang sesuai.\n\nMisalnya:\n\n- Simpan carousel ini.\n- Bagikan ke temanmu.\n- Follow untuk konten berikutnya.\n- Komentar pendapatmu.\n- Bookmark agar tidak lupa.\n\n---\n\n# LANGKAH 7 — KONSISTENSI\n\nPastikan seluruh carousel:\n\n✅ Menggunakan font yang sama\n\n✅ Menggunakan color palette yang sama\n\n✅ Menggunakan icon yang sama\n\n✅ Menggunakan illustration style yang sama\n\n✅ Menggunakan layout yang konsisten\n\n✅ Menggunakan hierarchy visual yang sama\n\n✅ Menggunakan spacing yang sama\n\n✅ Menggunakan border radius yang sama\n\n✅ Menggunakan tone of voice yang sama\n\n✅ Memiliki storytelling yang mengalir\n\n✅ Memiliki visual hierarchy yang jelas\n\n✅ Terlihat berasal dari satu brand\n\n---\n\n# PREFERENSI TAMBAHAN USER\n\nIkuti seluruh preferensi berikut selama tidak bertentangan dengan prinsip desain yang baik.\n\n{{ $json.custom_prompt_tambahan }}\n\n---\n\n# FORMAT OUTPUT\n\n1. Analisis Topik\n2. Content Strategy\n3. Design System\n4. Color Palette\n5. Typography\n6. Icon Style\n7. Illustration Style\n8. Layout System\n9. Struktur Carousel\n10. Detail Setiap Slide\n11. CTA\n12. Checklist Konsistensi\n\nPastikan hasil akhir sangat detail, profesional, konsisten, mudah dipahami, dan siap digunakan sebagai blueprint untuk membuat carousel Instagram berkualitas premium.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# MASTER PROMPT — AI Carousel Generator (Consistent Design System)\n\nKamu adalah seorang Senior Content Strategist, Brand Designer, dan UI Designer.\nTugasmu adalah membuat carousel yang KONSISTEN secara visual, mudah dibaca, modern, profesional, dan engaging, apa pun topiknya. Jangan hanya fokus pada isi — bangun juga design system sehingga seluruh slide terasa berasal dari satu brand.\n\n# STEP 1 — ANALISIS TOPIK\nAnalisis: siapa target audiens, tujuan carousel, emosi yang ingin dibangun, tingkat formalitas, dan apakah topik lebih cocok edukasi / storytelling / opini / tutorial / checklist / case study. Lalu tentukan style visual paling cocok. Isi ini di field \"topic_analysis\".\n\n# STEP 2 — BUAT DESIGN SYSTEM (WAJIB, dipakai di SELURUH slide)\n- Warna: tentukan Primary, Secondary, Accent, Background, Neutral (format HEX). Seluruh carousel WAJIB hanya memakai palette ini.\n- Typography: maksimal 2 font (heading + body) yang mudah dibaca.\n- Icon style: pilih SATU (outline / filled / duotone / minimal / rounded). Jangan berubah.\n- Illustration: pilih SATU (flat illustration / isometric / 3D / gradient shape / abstract blob / geometric / tanpa ilustrasi). Konsisten.\n- Shape: pilih SATU (rounded card / square card / organic blob / circle / pill / rectangle).\n- Shadow: soft / medium / no shadow.\n- Border radius: mis. 16px atau 24px, dipakai di semua card.\n- Spacing: grid konsisten (margin luar, padding, jarak antar elemen).\n- Alignment: Left atau Center. Jangan berubah.\n- Style: pilih SATU (Apple / Notion / Linear / Stripe / Duolingo / Modern Editorial / Glassmorphism / Neo Brutalism / Soft Minimalism) dan jelaskan alasannya di \"style_reason\".\nIsi seluruhnya di field \"design_system\".\n\n# STEP 3 — STRUKTUR CAROUSEL\nBuat slide TEPAT sebanyak nilai \"jumlah_slide\" yang diminta user. Jika kosong/tidak valid, pilih jumlah terbaik (ideal 5-9). Gunakan struktur sesuai jumlah slide:\n- 1: Hook + headline + penjelasan singkat + CTA kecil\n- 2: (Hook, Masalah) (Solusi + CTA)\n- 3: Hook / Penjelasan utama / Kesimpulan + CTA\n- 4: Hook / Masalah / Solusi / CTA\n- 5: Hook / Problem / Insight / Solution / CTA\n- 6: Hook / Problem / Kenapa terjadi / Cara mengatasi / Tips tambahan / CTA\n- 7: Hook / Masalah / Fakta / Insight / Solusi / Contoh / CTA\n- 8: Hook / Masalah / Fakta / Kesalahan umum / Cara benar / Contoh / Summary / CTA\n- 9: Hook / Masalah / Insight / Data / Kesalahan / Framework / Action Step / Ringkasan / CTA\n- 10: Hook / Problem / Insight / Data / Kesalahan / Tips 1 / Tips 2 / Tips 3 / Summary / CTA\nSlide pertama selalu HOOK, slide terakhir selalu CTA.\n\n# STEP 4 — FORMAT SETIAP SLIDE\nUntuk setiap slide isi: slide_number, purpose (tujuan slide), title (judul), content (isi), visual (visual recommendation), layout, icon, dominant_color (HEX dari palette), cta (jika ada), dan image_prompt.\n\n# STEP 5 — VISUAL CONSISTENCY (WAJIB)\nSemua heading sama, body sama, icon sama, spacing sama, margin sama, border radius sama, warna sama (hanya dari palette), ilustrasi sama. Jangan membuat slide terlihat dari template berbeda.\n\n# STEP 6 — COPYWRITING\nHook kuat, kalimat pendek, maksimal 2-3 kalimat per slide, mudah dipahami, hindari paragraf panjang, gunakan bullet bila perlu, bahasa sesuai target audiens (ikuti bahasa TOPIK user).\n\n# STEP 7 — CTA\nAkhiri dengan CTA relevan (mis. \"Simpan carousel ini\", \"Bagikan ke teman\", \"Follow untuk konten berikutnya\", \"Komen pendapatmu\").\n\n# ATURAN IMAGE PROMPT (SANGAT PENTING untuk konsistensi gambar)\nUntuk setiap slide, tulis \"image_prompt\" dalam BAHASA INGGRIS, estetik, dan mendetail, yang menggambarkan visual slide tersebut. WAJIB sertakan di dalam setiap image_prompt: gaya visual (design_system.style), jenis ilustrasi (illustration), icon style, shape, DAN palette warna lengkap (primary, secondary, accent, background) dengan kode HEX-nya, serta alignment. Ini memastikan seluruh gambar terlihat dari satu brand. Jika \"custom_prompt_tambahan\" diisi user, integrasikan preferensi tersebut ke design_system dan ke setiap image_prompt.\n\n# OUTPUT\nKembalikan HANYA JSON valid sesuai skema yang diberikan (topic_analysis, design_system, slides[]). Jangan tambahkan teks lain di luar JSON."
+        }
+      },
+      "id": "d60f9430-2cf0-4512-ad42-6787700775f6",
+      "name": "AI Agent: Buat Carousel Script",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"topic_analysis\":{\"audience\":\"\",\"goal\":\"\",\"emotion\":\"\",\"formality\":\"\",\"content_type\":\"\"},\"design_system\":{\"colors\":{\"primary\":\"#4F46E5\",\"secondary\":\"#818CF8\",\"accent\":\"#F59E0B\",\"background\":\"#FFFFFF\",\"neutral\":\"#374151\"},\"typography\":{\"heading\":\"Poppins Bold\",\"body\":\"Inter Regular\"},\"icon_style\":\"outline\",\"illustration\":\"flat illustration\",\"shape\":\"rounded card\",\"shadow\":\"soft shadow\",\"border_radius\":\"16px\",\"spacing\":\"margin 48px, padding 32px, gap 16px\",\"alignment\":\"Left\",\"style\":\"Soft Minimalism\",\"style_reason\":\"\"},\"slides\":[{\"slide_number\":1,\"purpose\":\"Hook\",\"title\":\"Judul slide\",\"content\":\"Isi singkat 2-3 kalimat\",\"visual\":\"Visual recommendation\",\"layout\":\"1 kolom\",\"icon\":\"outline\",\"dominant_color\":\"#4F46E5\",\"cta\":\"\",\"image_prompt\":\"Detailed English image prompt including design system\"}]}"
+      },
+      "id": "0d09d223-1d4d-4e38-b8c5-8fc95497f719",
+      "name": "Parser Slides",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nconst inputs = $input.all();\nconst sources = $('Terproses?').all();\nfor (let i = 0; i < inputs.length; i++) {\n  const parsed = inputs[i].json.output || inputs[i].json;\n  const slides = (parsed && parsed.slides) ? parsed.slides : [];\n  const src = sources[i] ? sources[i].json : {};\n  const topik = src.topik || parsed.topik || '';\n  const id = src.id || '';\n  const email = src.email || '';\n\n  // Bangun ringkasan design system untuk disuntikkan ke tiap image prompt (jaminan konsistensi brand)\n  const ds = parsed.design_system || {};\n  const c = ds.colors || {};\n  const dsParts = [];\n  if (ds.style) dsParts.push(ds.style + ' style');\n  if (ds.illustration) dsParts.push(ds.illustration);\n  if (ds.icon_style) dsParts.push(ds.icon_style + ' icons');\n  if (ds.shape) dsParts.push(ds.shape + ' shapes');\n  const palette = [c.primary, c.secondary, c.accent, c.background].filter(Boolean).join(', ');\n  if (palette) dsParts.push('strict color palette: ' + palette);\n  if (ds.alignment) dsParts.push(ds.alignment.toLowerCase() + ' aligned');\n  dsParts.push('cohesive brand design system, consistent visual identity across all slides, clean modern professional social media carousel slide');\n  const dsSuffix = dsParts.join(', ');\n\n  // Ringkasan design system untuk email\n  const dsText = [\n    'Style: ' + (ds.style || '-'),\n    'Colors: primary ' + (c.primary||'-') + ', secondary ' + (c.secondary||'-') + ', accent ' + (c.accent||'-') + ', background ' + (c.background||'-') + ', neutral ' + (c.neutral||'-'),\n    'Typography: heading ' + ((ds.typography||{}).heading||'-') + ', body ' + ((ds.typography||{}).body||'-'),\n    'Icon: ' + (ds.icon_style||'-') + ' | Illustration: ' + (ds.illustration||'-') + ' | Shape: ' + (ds.shape||'-'),\n    'Border radius: ' + (ds.border_radius||'-') + ' | Alignment: ' + (ds.alignment||'-'),\n  ].join('\\n');\n\n  const lines = [];\n  lines.push('=== DESIGN SYSTEM ===');\n  lines.push(dsText);\n  lines.push('');\n  lines.push('=== SLIDES ===');\n  for (const s of slides) {\n    lines.push('Slide ' + s.slide_number + ' (' + (s.purpose||'') + '):');\n    lines.push('Judul: ' + (s.title || s.headline || ''));\n    lines.push('Isi: ' + (s.content || ''));\n    if (s.cta) lines.push('CTA: ' + s.cta);\n    lines.push('Visual: ' + (s.visual || ''));\n    lines.push('');\n  }\n  const full = lines.join('\\n');\n\n  for (const s of slides) {\n    const basePrompt = s.image_prompt || '';\n    // Sisipkan design system ke image prompt jika belum lengkap\n    const finalPrompt = basePrompt + '. ' + dsSuffix;\n    results.push({ json: {\n      id: id,\n      topik: topik,\n      email: email,\n      full_script: full,\n      slide_number: s.slide_number,\n      headline: s.title || s.headline || '',\n      image_prompt: finalPrompt,\n    }});\n  }\n}\nreturn results;"
+      },
+      "id": "cbcbece5-ff28-4832-9437-38f84e957706",
+      "name": "Pecah Slide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-image (Nano Banana Pro)"
+        },
+        "prompt": "={{ $json.image_prompt }}",
+        "options": {
+          "binaryPropertyOutput": "data"
+        }
+      },
+      "id": "5f7cad42-4891-4cd0-8c95-2f51ec7b3312",
+      "name": "Generate Gambar (Gemini)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        336
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pNiPbXLxu37WvzUM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "=carousel-{{ $('Pecah Slide').item.json.id }}-slide-{{ $('Pecah Slide').item.json.slide_number }}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "73e1c1c9-d9ff-42eb-a6cc-28703fee5e6d",
+      "name": "Upload Slide ke Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        112
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vAnZVLivEncyznEk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id",
+              "name": "id",
+              "value": "={{ $('Pecah Slide').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "topik",
+              "name": "topik",
+              "value": "={{ $('Pecah Slide').item.json.topik }}",
+              "type": "string"
+            },
+            {
+              "id": "email",
+              "name": "email",
+              "value": "={{ $('Pecah Slide').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "full_script",
+              "name": "full_script",
+              "value": "={{ $('Pecah Slide').item.json.full_script }}",
+              "type": "string"
+            },
+            {
+              "id": "slide_number",
+              "name": "slide_number",
+              "value": "={{ $('Pecah Slide').item.json.slide_number }}",
+              "type": "number"
+            },
+            {
+              "id": "headline",
+              "name": "headline",
+              "value": "={{ $('Pecah Slide').item.json.headline }}",
+              "type": "string"
+            },
+            {
+              "id": "drive_link",
+              "name": "drive_link",
+              "value": "={{ $json.webViewLink || $json.webContentLink || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b87125c3-7ff4-44af-9a2b-a9b1c1179469",
+      "name": "Gabung Hasil Slide",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2144,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "slides",
+        "options": {}
+      },
+      "id": "bfb59922-09e2-4c03-9605-41a4e0d5f790",
+      "name": "Aggregate Slides",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2368,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst slides = data.slides || [];\nconst id = slides.length ? slides[0].id : '';\nconst topik = slides.length ? slides[0].topik : '';\nconst script = slides.length ? slides[0].full_script : '';\nconst fallback = 'product.maxyacademy@gmail.com';\nconst email = (slides.length && slides[0].email) ? slides[0].email : fallback;\nconst links = slides.map(s => 'Slide ' + s.slide_number + ' (' + s.headline + '): ' + (s.drive_link || 'uploaded')).join('\\n');\nreturn [{ json: {\n  id: id,\n  to: email,\n  subject: 'Carousel siap: ' + topik,\n  body: 'Topik: ' + topik + '\\n\\n=== CAROUSEL SCRIPT (' + slides.length + ' slide) ===\\n' + script + '\\n\\n=== GAMBAR (Google Drive) ===\\n' + links,\n}}];"
+      },
+      "id": "e9f645fd-f02e-4d56-b9d3-1677723b5c5d",
+      "name": "Susun Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "c4209fe9-a990-4132-bfd1-fa9a76c2160a",
+      "name": "Email: Hasil Carousel",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2816,
+        112
+      ],
+      "webhookId": "78e3cd58-b18c-449d-a560-c10095319fe9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "B4V764ikXAQGqmvy",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "17I3UwliwZo5pXAH3Y5ckhkY9WOPRGZR3vJRKQuW2AAA",
+          "cachedResultName": "Untitled spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $('Susun Email').item.json.id }}",
+            "status": "Completed",
+            "timestamp": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "82205436-5d15-45fe-9b2f-2850536aa84e",
+      "name": "Update Status: Completed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3040,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JNofzwS1fq37kpGU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "product.maxyacademy@gmail.com",
+        "subject": "Carousel Automation: Baris data gagal diproses",
+        "emailType": "text",
+        "message": "=Baris id \"{{ $json.id }}\" tidak bisa diproses (topik kosong/tidak valid). Mohon dicek kembali di Google Sheet.",
+        "options": {}
+      },
+      "id": "e968d2a6-a014-4d40-a0b3-cc0e61e35c15",
+      "name": "Email: Data Gagal Diproses",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        400
+      ],
+      "webhookId": "3edd8816-f4c1-454c-a49c-0205107d97b9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "B4V764ikXAQGqmvy",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "17I3UwliwZo5pXAH3Y5ckhkY9WOPRGZR3vJRKQuW2AAA",
+          "cachedResultName": "Untitled spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $('Terproses?').item.json.id }}",
+            "status": "Failed",
+            "timestamp": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1c971bc0-1862-440c-a31a-34ce17fb586f",
+      "name": "Update Status: Failed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1472,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JNofzwS1fq37kpGU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-image-2",
+          "mode": "list",
+          "cachedResultName": "GPT-IMAGE-2"
+        },
+        "prompt": "={{ $json.image_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1680,
+        112
+      ],
+      "id": "c71133bb-4e4a-4927-a031-d09acd92890c",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "5BfJcrBE9FjLer99",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        224
+      ],
+      "id": "7d4d2470-37a8-425e-bba9-12acbb4e2133",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5BfJcrBE9FjLer99",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 16 * * *"
+            }
+          ]
+        }
+      },
+      "id": "e1c25252-13a8-425f-a8cc-dccfd036d634",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17I3UwliwZo5pXAH3Y5ckhkY9WOPRGZR3vJRKQuW2AAA",
+          "mode": "list",
+          "cachedResultName": "Carousel Content Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17I3UwliwZo5pXAH3Y5ckhkY9WOPRGZR3vJRKQuW2AAA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17I3UwliwZo5pXAH3Y5ckhkY9WOPRGZR3vJRKQuW2AAA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "8f6e56a3-6edd-452c-a4ad-d6bf465f8212",
+      "name": "Topics",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        960,
+        1488
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JNofzwS1fq37kpGU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "70981f18-dbba-42b7-a9d5-8c1fbc5042f2",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "✅",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "99d3c95b-5581-4165-82db-40d1abbd9755",
+      "name": "Filter1",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        1488
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "eed6ee84-009c-4686-b11d-e64868d4222d",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the first input item in 'Run Once' mode\nconst data = $input.first().json;\n\nconst output = [];\n\nfor (let i = 1; i <= 6; i++) {\n  const headingKey = `Slide ${i} Heading`;\n\n  // Get all matching subheadings\n  const subheadingKeys = Object.keys(data).filter(key =>\n    key.startsWith(`Slide ${i} Sub Heading`)\n  );\n\n  const subheadings = subheadingKeys\n    .map(key => data[key])\n    .filter(value => value && value.trim());\n\n  // Handle CTA keys for Slide 6\n  if (subheadings.length === 0 && i === 6) {\n    const ctaKeys = Object.keys(data).filter(key =>\n      key.startsWith(`Slide 6 CTA`)\n    );\n    ctaKeys.sort(); // Maintain CTA order\n    subheadings.push(\n      ...ctaKeys.map(key => data[key]).filter(value => value && value.trim())\n    );\n  }\n\n  if (data[headingKey] || subheadings.length > 0) {\n    output.push({\n      json: {\n        heading: data[headingKey] || '',\n        subheadings,\n        slideIndex: i  // ✅ Add the slide index here\n      },\n    });\n  }\n}\n\nreturn output;\n\n\n\n"
+      },
+      "id": "7d0d2d20-d1a7-421b-8d8e-b7bb46a2cb03",
+      "name": "ArrayConvert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "maxItems": 2
+      },
+      "id": "42137db2-8d96-41cb-9376-52aba3769a73",
+      "name": "Limit1",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "webViewLink"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "71264f44-cccf-4f08-a8d8-73d6ba123c45",
+      "name": "Aggregate Drive Links",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2944,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nlet links = item.webViewLink || [];\nif (!Array.isArray(links)) { links = [links]; }\n\nlet linksText = \"\";\nfor (let i = 0; i < links.length; i++) {\n  linksText += `Slide ${i + 1}: ${links[i]}\\n`;\n}\n\nreturn [{ json: { links, linksText, slideCount: links.length } }];\n"
+      },
+      "id": "7c2dce86-6c31-4424-8412-3cb0f623b863",
+      "name": "Format Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4",
+          "mode": "list",
+          "cachedResultName": "Topic",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1727753224,
+          "mode": "list",
+          "cachedResultName": "carousel",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4/edit#gid=1727753224"
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "id": "307bf6a5-bc26-4523-8837-ed9822afff9d",
+      "name": "Get row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        4672,
+        816
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JNofzwS1fq37kpGU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "910b2302-7987-45a9-9748-aa0a655e6a4a",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "=✅",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ea66ff89-d6b0-49b4-a854-e5e3d45d0c12",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        3376,
+        416
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "af764ea3-b3e2-4a4f-8bb9-80c85e7a0f4d",
+      "name": "Limit2",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        3568,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4",
+          "mode": "list",
+          "cachedResultName": "Topic",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1727753224,
+          "mode": "list",
+          "cachedResultName": "carousel",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4/edit#gid=1727753224"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sr. No.": "={{ $json[\"Sr. No.\"] }}",
+            "Status": "✅"
+          },
+          "matchingColumns": [
+            "Sr. No."
+          ],
+          "schema": [
+            {
+              "id": "Sr. No.",
+              "displayName": "Sr. No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "933c50d2-9c01-438d-91a4-ec112a68709c",
+      "name": "Update row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        3712,
+        560
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JNofzwS1fq37kpGU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dddb2969-080f-42cf-be70-217ce5b71c75",
+              "name": "heading",
+              "value": "={{ $json.heading }}",
+              "type": "string"
+            },
+            {
+              "id": "b6c4f6dc-e927-4ca0-b2c9-2a156ca89196",
+              "name": "slideindex",
+              "value": "={{ $json.slideIndex-1 }} ",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "283fa66a-98b0-41a1-8bfc-2a40f1158e99",
+      "name": "Heading",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4336,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dddb2969-080f-42cf-be70-217ce5b71c75",
+              "name": "subheading1",
+              "value": "={{ $json.subheadings[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "0bf918ca-4434-47f4-910a-de6fdb27f7fd",
+              "name": "subheading2",
+              "value": "={{ $json.subheadings[1] || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "512b17c8-3cee-4063-bde4-4b48ed18a7ad",
+              "name": "subheading3",
+              "value": "={{ $json.subheadings[2] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "ceb5841b-fdab-4833-b6ad-3590608de13d",
+              "name": "slideindex",
+              "value": "={{ $json.slideIndex }}",
+              "type": "number"
+            },
+            {
+              "id": "d88e2350-2e87-4376-a48c-eb4a0448ff0c",
+              "name": "subheading",
+              "value": "___________________________________",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b3453331-41dc-4200-936f-7bb2d7983734",
+      "name": "Subheading",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4880,
+        1984
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "412c4512-b81b-4965-b485-58e18c672f16",
+      "name": "Wait4",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3072,
+        1456
+      ],
+      "webhookId": "aa842730-11f9-4e72-b5cf-6324b1d663e6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.heading }}\n{{ $json.subheadings }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a professional visual prompt engineer for DALL·E 3. Your task is to convert the given heading and subheading into a single richly detailed, photorealistic DSLR-style visual scene. Treat this as a real-life photo shoot — with careful consideration for subject, camera angle, lighting, background, props, and atmosphere.\n\nHeading:  {{ $json.heading }} \nSubheading: {{ $json.subheadings }}\n\nBased on the topic and tone of these lines, construct a scene that visually expresses the **core message** and **emotional context**. If the topic involves health, digestion, or Ayurveda, optionally incorporate traditional Indian wellness elements such as turmeric roots, neem leaves, copper or brass utensils, clay cups, banana leaves, Ayurvedic herbs, stone grinders, or calm nature settings — but only when contextually appropriate.\n\nPay close attention to lighting:  \n- Use golden hour light for warmth or emotional scenes  \n- Soft indoor light for comforting or kitchen scenes  \n- Harsh daylight for clinical or cautionary themes  \n- Morning sunlight for health and freshness  \n- Candlelight or warm glow for spiritual or introspective tones\n\nEnsure the environment supports the message: this could be a rustic Indian kitchen, a wooden dining table with scattered herbs, a wellness corner, a quiet village home, or a clean modern counter with healthy ingredients — depending on the tone of the input.\n\nAvoid abstract, cartoonish, or surreal elements. The scene should be crisp, focused, and believable — as if shot with a high-end DSLR camera. Return **only the complete scene description** as a single line, with no labels, formatting, or quotation marks. Make sure it's a potrait image as it's for an instagram post\n "
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "4fdad943-a1c6-4103-8549-e079c61c562a",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        3360,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\t\"Prompt\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n}",
+        "autoFix": true
+      },
+      "id": "4158b25d-ffc1-4192-9134-905dc08199d5",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3456,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "6a0d16e2-7db2-42e8-b853-de241f127d60",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3776,
+        1456
+      ],
+      "webhookId": "f64edea9-346e-4fa3-91c8-330af49428d4"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "04f9269d-34b2-44a2-a488-d423a08f0988",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4096,
+        1456
+      ],
+      "webhookId": "d3884402-14be-4140-acb9-85b83baab858"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 1024,
+        "height": 1280,
+        "resizeOption": "ignoreAspectRatio",
+        "options": {}
+      },
+      "id": "11d15476-8524-4bc6-b08c-725da77213c4",
+      "name": "Edit Image3",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        4304,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1MwoSVIILudFkUSvJVjUxZU-J3b3TzTEv",
+          "mode": "list",
+          "cachedResultName": "logo.png",
+          "cachedResultUrl": "https://drive.google.com/file/d/1MwoSVIILudFkUSvJVjUxZU-J3b3TzTEv/view?usp=drivesdk"
+        },
+        "options": {
+          "binaryPropertyName": "overlay",
+          "fileName": "overlay"
+        }
+      },
+      "id": "b89849f7-55d0-4b50-900f-39a87ce80d14",
+      "name": "DownloadLogoOverlay",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        4480,
+        1456
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vAnZVLivEncyznEk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "composite",
+        "dataPropertyNameComposite": "=overlay",
+        "options": {}
+      },
+      "id": "734f70c5-147e-4612-95ff-3d421c3a54fe",
+      "name": "OverlayLogo",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        4688,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "58f57cb0-5235-49ff-a0d1-571b15365158",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2192,
+        1488
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ded787a8-1739-43ec-97d4-7e168db5080a",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3872,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "6556bb61-b15d-41da-9694-8a237260437e",
+      "name": "Merge2",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5088,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "13e8c577-ca67-4d1d-bc79-111220245d8f",
+      "name": "Merge4",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5744,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "={{$json.heading}}",
+        "fontSize": 95,
+        "fontColor": "#ffffff",
+        "positionY": 600,
+        "lineLength": 25,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf"
+        }
+      },
+      "id": "a02bbb8f-d2b1-42d1-840c-415ebf769f01",
+      "name": "AddHeading2",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        5472,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "e4bc5ccf-f1cf-4b35-a5ea-56de292af03a",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5312,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d13b3ed4-036a-4810-b766-a57ef81ee0e4",
+              "name": "caption",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5b358855-b151-48b7-9edb-026f1b7b170b",
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4464,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "<__PLACEHOLDER_VALUE__recipient email address__>",
+        "subject": "=Your Instagram Carousel is ready ✅",
+        "emailType": "text",
+        "message": "=Your Instagram carousel images are ready.\n\nCaption:\n{{ $json.caption }}\n\nImage Links ({{ $json.slideCount }} slides):\n{{ $json.linksText }}",
+        "options": {}
+      },
+      "id": "cea42fad-4a12-46c1-8185-9483b3cc3f38",
+      "name": "Send Carousel Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        5568,
+        720
+      ],
+      "webhookId": "a70eec22-29ec-456c-9e0b-5c59742ba9f6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "B4V764ikXAQGqmvy",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write an Instagram caption . The caption should reflect Ayurvedic themes like balance, nature, and wellness.Use emojis and keep it specifically ayurvedic based . Make the entire caption theme around the topic {{ $json[\"Slide 1 Heading\"] }} & {{ $json[\"Slide 1 Sub Heading \"] }} entirely .The full caption should revolve around the above idea. And also add the #dailyallday along with other hashtags as well.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a creative Ayurvedic brand strategist writing Instagram captions for a health and wellness supplement company. Keep the tone authentic, natural, and emotionally engaging. Include 5–7 relevant hashtags."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "de9fc21b-98eb-47f6-bad2-bd28f356bf23",
+      "name": "Basic LLM Chain1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        4080,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "0357ce11-19f6-4be3-8abf-d1fbb4d82ca0",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4032,
+        592
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "5BfJcrBE9FjLer99",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\t\"caption\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n}",
+        "autoFix": true
+      },
+      "id": "1f2bbd72-4d56-49ad-b358-f31bff65c05d",
+      "name": "Structured Output Parser1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4192,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b1957318-4b3f-40d3-ac4f-c3b7daef08dd",
+              "leftValue": "={{ $json.slideindex }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "c5ce0d9a-c3c4-49f6-9dca-179a86a28efd",
+              "leftValue": "={{ $json.slideindex }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "271b4a4c-a70c-4ee2-8e95-264058b53e3d",
+      "name": "If3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5232,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "={{ $json.slideindex }}.",
+        "fontSize": 200,
+        "fontColor": "#66ff00",
+        "positionY": 450,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf"
+        }
+      },
+      "id": "58fb5695-626e-4fa7-bccb-25721c0c5a71",
+      "name": "Edit Image1",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        5232,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c3dba645-854b-4754-8d2d-21f626971564",
+              "leftValue": "={{ $json.slideindex }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7a839088-7107-42a7-bde7-f7edaa0b02f3",
+      "name": "If1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5952,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "={{$json.subheading}}",
+        "fontSize": 50,
+        "fontColor": "#66ff00",
+        "positionY": 750,
+        "lineLength": 40,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf"
+        }
+      },
+      "id": "b0d95f48-61ea-4abe-8cca-234dbdf55ecd",
+      "name": "AddSubheading12",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        6112,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "=\\n\\n{{$json.subheading1}}",
+        "fontSize": 55,
+        "fontColor": "#fcf1b3",
+        "positionY": 750,
+        "lineLength": 40,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf"
+        }
+      },
+      "id": "c6f34ca9-de9c-470e-97ec-693672facbe3",
+      "name": "AddSubheading9",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        6288,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "=\\n\\n{{$json.subheading2}}",
+        "fontSize": 55,
+        "fontColor": "#66ff00",
+        "positionX": 290,
+        "positionY": 750,
+        "lineLength": 40,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf"
+        }
+      },
+      "id": "90c27fda-c86e-47f6-92fb-ce4711f49de5",
+      "name": "AddSubheading10",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        6464,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "=\\n\\n\\n\\n{{$json.subheading3}}",
+        "fontSize": 55,
+        "fontColor": "#fcf1b3",
+        "positionY": 750,
+        "lineLength": 45,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf"
+        }
+      },
+      "id": "27a120df-34a0-4588-a5ef-5c5527561fed",
+      "name": "AddSubheading11",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        6640,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "8c2c22cc-c3b8-4783-8b75-0f8a446194d4",
+      "name": "Wait7",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6720,
+        1488
+      ],
+      "webhookId": "9055390c-5d7b-467d-8ded-cbca15eaa746"
+    },
+    {
+      "parameters": {
+        "name": "=Carousel Slide {{ $json.slideindex }}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Q66_tmMnzf6lxHGEqyzglgqu3CP4pCda",
+          "mode": "list",
+          "cachedResultName": "Carousel Content Automation",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Q66_tmMnzf6lxHGEqyzglgqu3CP4pCda"
+        },
+        "options": {}
+      },
+      "id": "db34fed2-b3b2-4627-8455-b7349e84cb7a",
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        6992,
+        1504
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vAnZVLivEncyznEk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "={{$json.subheading}}",
+        "fontSize": 50,
+        "fontColor": "#66ff00",
+        "positionY": 750,
+        "lineLength": 40,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf"
+        }
+      },
+      "id": "48ef8d83-04a6-48a3-9716-2d50133c305e",
+      "name": "AddSubheading13",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        6160,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "=\\n{{$json.subheading1}}\n{{$json.subheading2}}\n{{$json.subheading3}}",
+        "fontSize": 50,
+        "fontColor": "#fcf1b3",
+        "positionY": 770,
+        "lineLength": 40,
+        "options": {
+          "font": "/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf"
+        }
+      },
+      "id": "0fa218f9-e24f-4366-abf8-03dc9e9cac40",
+      "name": "AddSubheading4",
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        6352,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "2ba25194-5132-4cb2-b40a-0b878df4a135",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3360,
+        1312
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "5BfJcrBE9FjLer99",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-image-2-2026-04-21",
+          "mode": "list",
+          "cachedResultName": "GPT-IMAGE-2-2026-04-21"
+        },
+        "prompt": "={{ $json.output }} ⚠️ Never generate landscape images or square formats unless explicitly instructed.\n\nFocus on vertical composition: keep key subjects centered vertically, and ensure the image fills the full height of a portrait frame.\n\nIf the prompt lacks orientation instructions, default to portrait layout suitable for Instagram posts or carousels.\n\nAvoid adding black bars or padding — generate fully framed content with no empty borders",
+        "options": {}
+      },
+      "id": "f2b63b0d-d986-4d44-b58f-2ddba041ca60",
+      "name": "Generate an image1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        3904,
+        1456
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "5BfJcrBE9FjLer99",
+          "name": "OpenAI account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get Topics (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Topics (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Gabung Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gabung Data": {
+      "main": [
+        [
+          {
+            "node": "Lewati Yang Sudah Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lewati Yang Sudah Completed": {
+      "main": [
+        [
+          {
+            "node": "Terproses?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Terproses?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent: Buat Carousel Script",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: Data Gagal Diproses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent: Buat Carousel Script": {
+      "main": [
+        [
+          {
+            "node": "Pecah Slide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser Slides": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent: Buat Carousel Script",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pecah Slide": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Gambar (Gemini)": {
+      "main": [
+        []
+      ]
+    },
+    "Upload Slide ke Drive": {
+      "main": [
+        [
+          {
+            "node": "Gabung Hasil Slide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gabung Hasil Slide": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Slides": {
+      "main": [
+        [
+          {
+            "node": "Susun Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Susun Email": {
+      "main": [
+        [
+          {
+            "node": "Email: Hasil Carousel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: Hasil Carousel": {
+      "main": [
+        [
+          {
+            "node": "Update Status: Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: Data Gagal Diproses": {
+      "main": [
+        [
+          {
+            "node": "Update Status: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Upload Slide ke Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent: Buat Carousel Script",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topics": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "ArrayConvert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ArrayConvert": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Drive Links": {
+      "main": [
+        [
+          {
+            "node": "Format Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Links": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Heading": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Subheading": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Generate an image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Edit Image3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image3": {
+      "main": [
+        [
+          {
+            "node": "DownloadLogoOverlay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DownloadLogoOverlay": {
+      "main": [
+        [
+          {
+            "node": "OverlayLogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OverlayLogo": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Drive Links",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Heading",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Subheading",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddHeading2": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Send Carousel Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Edit Image1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AddHeading2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image1": {
+      "main": [
+        [
+          {
+            "node": "AddHeading2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AddSubheading12",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AddSubheading13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddSubheading12": {
+      "main": [
+        [
+          {
+            "node": "AddSubheading9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddSubheading9": {
+      "main": [
+        [
+          {
+            "node": "AddSubheading10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddSubheading10": {
+      "main": [
+        [
+          {
+            "node": "AddSubheading11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddSubheading11": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait7": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddSubheading13": {
+      "main": [
+        [
+          {
+            "node": "AddSubheading4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddSubheading4": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "errorWorkflow": "862wkp4YiTDUIG7J"
+  },
+  "versionId": "73042ec3-4763-4e86-b835-84af670f3615",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "959aa13dfd7a715006fa2c52de5c6044ed86328292f3cc5b77b53c1085705c86"
+  },
+  "nodeGroups": [],
+  "id": "OeoutBGyVWL59ZeE",
+  "tags": []
+}

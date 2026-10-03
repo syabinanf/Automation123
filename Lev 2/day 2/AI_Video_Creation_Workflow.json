@@ -1,0 +1,369 @@
+{
+  "name": "AI Video Creation - Script, Storyboard & Voice Over",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "sticky-1",
+      "name": "Note - Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-300, -260],
+      "parameters": {
+        "content": "## AI Video Creation Workflow\n1. Input caption/carousel via Form\n2. AI generate Video Script\n3. AI generate Storyboard (dari script)\n4. AI generate Voice Over Script (dari script)\n5. Gabung & simpan ke Google Docs\n\nGanti prompt di tiap node OpenAI sesuai gaya brand kamu.",
+        "height": 220,
+        "width": 320
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Input Konten untuk Video",
+        "formDescription": "Masukkan caption/carousel yang mau diubah jadi video script, storyboard, dan voice over script.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Caption / Carousel Text",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Platform Tujuan (misal: Instagram Reels, TikTok, YouTube Shorts)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Target Durasi (detik)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Tone / Gaya Bahasa (misal: santai, edukatif, storytelling)",
+              "fieldType": "text",
+              "requiredField": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "form-trigger-1",
+      "name": "Form Trigger - Input Caption",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [-60, 0],
+      "webhookId": "ai-video-creation-input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "caption_text",
+              "type": "string",
+              "value": "={{ $json['Caption / Carousel Text'] }}"
+            },
+            {
+              "id": "a2",
+              "name": "platform",
+              "type": "string",
+              "value": "={{ $json['Platform Tujuan (misal: Instagram Reels, TikTok, YouTube Shorts)'] }}"
+            },
+            {
+              "id": "a3",
+              "name": "duration_target",
+              "type": "string",
+              "value": "={{ $json['Target Durasi (detik)'] }}"
+            },
+            {
+              "id": "a4",
+              "name": "tone",
+              "type": "string",
+              "value": "={{ $json['Tone / Gaya Bahasa (misal: santai, edukatif, storytelling)'] || 'santai dan engaging' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-prepare-1",
+      "name": "Prepare Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [200, 0]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Kamu adalah scriptwriter video pendek profesional. Ubah caption/carousel menjadi VIDEO SCRIPT yang siap syuting. Format output:\n\n1. HOOK (0-3 detik): kalimat pembuka yang menarik perhatian\n2. ISI (per segmen, tulis timestamp perkiraan): poin-poin utama dari caption, disusun ulang menjadi narasi video yang mengalir\n3. CLOSING / CTA: penutup dengan call-to-action\n\nSesuaikan panjang script dengan target durasi dan platform yang diberikan. Gunakan tone sesuai instruksi. Tulis dalam Bahasa Indonesia, natural dan mudah diucapkan."
+            },
+            {
+              "role": "user",
+              "content": "=Caption/Carousel:\n{{ $json.caption_text }}\n\nPlatform: {{ $json.platform }}\nTarget durasi: {{ $json.duration_target }} detik\nTone: {{ $json.tone }}\n\nBuatkan video script lengkap sesuai format di atas."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "openai-script-1",
+      "name": "AI - Generate Video Script",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.8,
+      "position": [460, 0],
+      "credentials": {
+        "openAiApi": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Kamu adalah storyboard artist untuk video pendek. Berdasarkan video script yang diberikan, buatkan STORYBOARD dalam format tabel teks dengan kolom:\n\n| No. Scene | Timing (detik) | Visual Description | Camera Angle/Shot | Text Overlay/Caption on Screen | Transisi |\n\nSetiap baris = satu scene. Deskripsikan visual secara konkret (lokasi, objek, aksi, ekspresi) supaya bisa langsung dipakai tim produksi/editor. Tulis dalam Bahasa Indonesia."
+            },
+            {
+              "role": "user",
+              "content": "=Video Script:\n{{ $json.message.content }}\n\nPlatform: {{ $('Prepare Variables').item.json.platform }}\n\nBuatkan storyboard lengkap berdasarkan script di atas."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "openai-storyboard-1",
+      "name": "AI - Generate Storyboard",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.8,
+      "position": [740, -140],
+      "credentials": {
+        "openAiApi": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Kamu adalah penulis naskah voice over (VO) profesional. Berdasarkan video script yang diberikan, buatkan VOICE OVER SCRIPT yang siap direkam, dengan format:\n\n[Timestamp] (Nada/Emosi pembacaan): Kalimat VO\n\nContoh:\n[00:00-00:03] (Antusias, cepat): \"...\"\n\nPastikan kalimat singkat, enak diucapkan, dan sesuai jeda napas alami. Sertakan catatan jeda (pause) jika perlu. Tulis dalam Bahasa Indonesia."
+            },
+            {
+              "role": "user",
+              "content": "=Video Script:\n{{ $json.message.content }}\n\nTone: {{ $('Prepare Variables').item.json.tone }}\nTarget durasi: {{ $('Prepare Variables').item.json.duration_target }} detik\n\nBuatkan voice over script lengkap berdasarkan script di atas."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "openai-vo-1",
+      "name": "AI - Generate Voice Over Script",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.8,
+      "position": [740, 140],
+      "credentials": {
+        "openAiApi": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-1",
+      "name": "Merge Outputs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [1000, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "video_script",
+              "type": "string",
+              "value": "={{ $('AI - Generate Video Script').item.json.message.content }}"
+            },
+            {
+              "id": "f2",
+              "name": "storyboard",
+              "type": "string",
+              "value": "={{ $('AI - Generate Storyboard').item.json.message.content }}"
+            },
+            {
+              "id": "f3",
+              "name": "voice_over_script",
+              "type": "string",
+              "value": "={{ $('AI - Generate Voice Over Script').item.json.message.content }}"
+            },
+            {
+              "id": "f4",
+              "name": "final_document",
+              "type": "string",
+              "value": "=VIDEO SCRIPT\n=================\n{{ $('AI - Generate Video Script').item.json.message.content }}\n\nSTORYBOARD\n=================\n{{ $('AI - Generate Storyboard').item.json.message.content }}\n\nVOICE OVER SCRIPT\n=================\n{{ $('AI - Generate Voice Over Script').item.json.message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-final-1",
+      "name": "Format Final Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1260, 0]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "title": "=Video Package - {{ $('Prepare Variables').item.json.platform }} - {{ $now.format('yyyy-MM-dd HH:mm') }}",
+        "options": {}
+      },
+      "id": "gdocs-1",
+      "name": "Save to Google Docs (Optional)",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [1520, 0],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Setup yang diperlukan\n1. Buat credential OpenAI (OpenAI API key) dan pasang di 3 node AI.\n2. (Opsional) Buat credential Google Docs OAuth2 di node terakhir kalau mau auto-save hasil ke Google Docs. Kalau tidak perlu, hapus/nonaktifkan node ini — hasil tetap ada di 'Format Final Output'.\n3. Jalankan workflow via Form Trigger (dapat link form dari node 'Form Trigger - Input Caption').\n4. Model default: gpt-4o-mini. Ganti sesuai kebutuhan/budget kamu.",
+        "height": 220,
+        "width": 340
+      },
+      "id": "sticky-2",
+      "name": "Note - Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1260, 220]
+    }
+  ],
+  "connections": {
+    "Form Trigger - Input Caption": {
+      "main": [
+        [
+          {
+            "node": "Prepare Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Variables": {
+      "main": [
+        [
+          {
+            "node": "AI - Generate Video Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Generate Video Script": {
+      "main": [
+        [
+          {
+            "node": "AI - Generate Storyboard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI - Generate Voice Over Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Generate Storyboard": {
+      "main": [
+        [
+          {
+            "node": "Merge Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Generate Voice Over Script": {
+      "main": [
+        [
+          {
+            "node": "Merge Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Outputs": {
+      "main": [
+        [
+          {
+            "node": "Format Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Final Output": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Docs (Optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "ai-video-creation-workflow"
+  }
+}

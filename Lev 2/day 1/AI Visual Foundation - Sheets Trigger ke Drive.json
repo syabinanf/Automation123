@@ -1,0 +1,545 @@
+{
+  "name": "AI Visual Foundation - Sheets Trigger ke Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1-Im2t3NX36-rnEdhrLrhLlxVrlDiDsyaVf33h2Gaiqs",
+          "mode": "list",
+          "cachedResultName": "Copy of Carousel Content Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-Im2t3NX36-rnEdhrLrhLlxVrlDiDsyaVf33h2Gaiqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 920033345,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-Im2t3NX36-rnEdhrLrhLlxVrlDiDsyaVf33h2Gaiqs/edit#gid=920033345"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "177beb53-8932-47d1-8a46-aeb3c31b8699",
+      "name": "Google Sheets - Trigger Naskah Baru",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        896
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "YpQfcZfzC0GdvVNa",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9779213a-10df-41cc-be85-b26b421aa5ef",
+              "name": "naskah",
+              "type": "string",
+              "value": "={{ $json['Naskah'] }}"
+            },
+            {
+              "id": "d93e0311-d669-441e-9ae9-3446813a25b8",
+              "name": "project_name",
+              "type": "string",
+              "value": "={{ $json['Nama Proyek'] || 'Konten-Sesi2' }}"
+            },
+            {
+              "id": "786b929b-a770-4030-98e7-0d060be6215a",
+              "name": "row_number",
+              "type": "number",
+              "value": "={{ $json.row_number }}"
+            },
+            {
+              "id": "5c058cfa-7aac-45d8-9d9c-ccbb79771d3a",
+              "name": "brand_style",
+              "type": "string",
+              "value": "Modern, clean, minimalist. Flat illustration dengan sedikit gradient, hindari 3D realistic berlebihan. Tone: profesional namun approachable."
+            },
+            {
+              "id": "29e74947-867a-4160-b570-ff7bc3414fa0",
+              "name": "brand_colors",
+              "type": "string",
+              "value": "Navy Blue (#1E3A8A) sebagai warna dominan, dipadukan putih (#FFFFFF) dan aksen kuning keemasan (#F5B942)."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cb631da8-e054-4da8-9410-0b2d6bff62f0",
+      "name": "Set - Brand Guidelines & Setup",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json.project_name }} - Visual Assets",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1lA9WhZEvcvQ65LA26DJ-rVyLUC8MNy2i",
+          "mode": "list",
+          "cachedResultName": "image n8n",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1lA9WhZEvcvQ65LA26DJ-rVyLUC8MNy2i"
+        },
+        "options": {}
+      },
+      "id": "f07447ea-8e2e-4860-ad41-fb6d0e1dd441",
+      "name": "Google Drive - Buat Folder Project",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        464,
+        1328
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "AodxxY2nlIaM7t1j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Kamu adalah AI Creative Director. Tugasmu menganalisis naskah konten dan mengubahnya menjadi deskripsi visual siap pakai untuk generate gambar AI. WAJIB terapkan brand guideline ini secara konsisten di SEMUA prompt: Gaya = {{ $('Set - Brand Guidelines & Setup').item.json.brand_style }} | Warna = {{ $('Set - Brand Guidelines & Setup').item.json.brand_colors }}. Balas HANYA dalam format JSON, tanpa teks tambahan, tanpa markdown code fence."
+            },
+            {
+              "content": "=Naskah dari Sesi 2:\n\n{{ $('Set - Brand Guidelines & Setup').item.json.naskah }}\n\nTugas:\n1. Pecah naskah menjadi maksimal 6 scene visual utama.\n2. Untuk tiap scene, buat 1 visual_prompt dalam BAHASA INGGRIS, detail, siap dipakai untuk generate gambar, dan WAJIB menyertakan elemen brand guideline di atas.\n3. Sertakan scene_title singkat, scene_description (1 kalimat, Bahasa Indonesia), dan mood_tags (3 kata kunci).\n\nFormat balasan (JSON object, HANYA ini, tanpa teks lain):\n{\n  \"scenes\": [\n    { \"scene_number\": 1, \"scene_title\": \"...\", \"scene_description\": \"...\", \"visual_prompt\": \"...\", \"mood_tags\": [\"...\",\"...\",\"...\"] }\n  ]\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "a6b3c7a7-7e1b-4316-83aa-923c2f43e00a",
+      "name": "Message a model",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        1328
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// Support v2+ \"Message a model\" node: output[0].content[0].text\n// Also support legacy OpenAI shapes as fallbacks\nlet raw = item?.output?.[0]?.content?.[0]?.text\n  ?? item?.message?.content\n  ?? item?.choices?.[0]?.message?.content\n  ?? item?.content\n  ?? item?.text\n  ?? (Array.isArray(item?.output) ? '' : item?.output)\n  ?? '';\n\nraw = String(raw).replace(/```json/gi, '').replace(/```/g, '').trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error('Gagal parse JSON dari OpenAI. Error: ' + e.message + ' | Raw: ' + raw.slice(0, 300));\n}\n\nconst brand = $('Set - Brand Guidelines & Setup').first().json;\nconst scenes = parsed.scenes || parsed;\n\nreturn scenes.map((scene, idx) => ({\n  json: {\n    scene_number: scene.scene_number || (idx + 1),\n    scene_title: scene.scene_title || ('Scene ' + (idx + 1)),\n    scene_description: scene.scene_description || '',\n    visual_prompt: scene.visual_prompt,\n    mood_tags: scene.mood_tags || [],\n    project_name: brand.project_name,\n    row_number: brand.row_number,\n    file_name: brand.project_name + '_scene' + (scene.scene_number || (idx + 1)) + '.png'\n  }\n}));"
+      },
+      "id": "a68cab3e-7c91-4a29-9819-5133a028f22f",
+      "name": "Code - Parse & Validasi JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-image-2-2026-04-21",
+          "mode": "list",
+          "cachedResultName": "GPT-IMAGE-2-2026-04-21"
+        },
+        "prompt": "={{ $json.visual_prompt }}",
+        "options": {}
+      },
+      "id": "f7dc02cb-ac70-407e-9ef3-f32ccf07f9cc",
+      "name": "Generate an image",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1168,
+        1328
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.file_name }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Google Drive - Buat Folder Project').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "518bbacd-1053-4cbc-918f-1daa373a8e2b",
+      "name": "Google Drive - Upload Image Asset",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1424,
+        1328
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "AodxxY2nlIaM7t1j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "assets",
+        "options": {}
+      },
+      "id": "ce03d73e-8a67-4963-8465-0bc8973d0ba6",
+      "name": "Aggregate - Kumpulkan Semua Asset",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = $input.first().json;\nconst assets = inputItem.assets || [];\nconst brand = $('Set - Brand Guidelines & Setup').first().json;\nconst folder = $('Google Drive - Buat Folder Project').first().json;\n\nreturn [{\n  json: {\n    row_number: brand.row_number,\n    project_name: brand.project_name,\n    asset_count: assets.length,\n    folder_link: folder.webViewLink || '',\n    finished_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "7093f0fe-da6b-4ef6-bb1e-85b07926aa12",
+      "name": "Code - Ringkasan Hasil",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "acd1ec77-00b9-4625-9e67-efe073fb555b",
+              "leftValue": "={{ $json.row_number }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "40bd30c1-9c1d-4263-a576-454b273def56",
+      "name": "IF - Ada Row untuk Diupdate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1-Im2t3NX36-rnEdhrLrhLlxVrlDiDsyaVf33h2Gaiqs",
+          "mode": "list",
+          "cachedResultName": "Copy of Carousel Content Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-Im2t3NX36-rnEdhrLrhLlxVrlDiDsyaVf33h2Gaiqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "row_number"
+          ],
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Status": "Selesai",
+            "Jumlah Asset": "={{ $json.asset_count }}",
+            "Link Folder": "={{ $json.folder_link }}",
+            "Tanggal Selesai": "={{ $json.finished_at }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "695ab7f6-8ac1-4b01-9850-c9c58465f207",
+      "name": "Google Sheets - Update Status Selesai",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2400,
+        1248
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "816933e8-4995-4d7e-9fec-ae0bb0a2833a",
+      "name": "NoOp - Skip (Mode Test)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        1424
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "198eed06-0174-42f8-be4e-c6a873bb3e74",
+      "name": "Manual Trigger (Test)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a767d0ec-003a-415c-b3e8-855aa061a9fe",
+              "name": "Naskah",
+              "type": "string",
+              "value": "Video dibuka dengan cahaya matahari pagi menyusup lembut ke dalam kamar, menandai awal hari baru bersama Maxy. Sosok utama terbangun dengan senyum, meregangkan tubuh sejenak, lalu meraih ponsel untuk membuka aplikasi Maxy dan melihat tiga prioritas hari ini yang sudah tersusun rapi. Ia melangkah ke dapur, menyeduh kopi hangat sambil mencatat rasa syukur singkat di jurnal digital. Transisi ke sesi peregangan ringan selama sepuluh menit, tubuh terasa lebih segar dan pikiran lebih jernih. Video ditutup dengan ia melangkah keluar rumah, penuh percaya diri, siap menghadapi hari — layar menampilkan tagline 'Mulai Harimu Lebih Baik Bersama Maxy"
+            },
+            {
+              "id": "63438a61-5288-4415-9f79-e7e7b2fc3747",
+              "name": "Nama Proyek",
+              "type": "string",
+              "value": "Maxy"
+            },
+            {
+              "id": "b85bb9c0-ff52-48fc-b392-408dfeb98215",
+              "name": "row_number",
+              "type": "number",
+              "value": 0
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "493bc96f-da25-4c1c-84a7-cbc8d5225cfc",
+      "name": "Set - Contoh Naskah",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        1328
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets - Trigger Naskah Baru": {
+      "main": [
+        []
+      ]
+    },
+    "Set - Brand Guidelines & Setup": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Buat Folder Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Buat Folder Project": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code - Parse & Validasi JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Parse & Validasi JSON": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Upload Image Asset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Upload Image Asset": {
+      "main": [
+        [
+          {
+            "node": "Aggregate - Kumpulkan Semua Asset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate - Kumpulkan Semua Asset": {
+      "main": [
+        [
+          {
+            "node": "Code - Ringkasan Hasil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Ringkasan Hasil": {
+      "main": [
+        [
+          {
+            "node": "IF - Ada Row untuk Diupdate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Ada Row untuk Diupdate?": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Update Status Selesai",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp - Skip (Mode Test)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger (Test)": {
+      "main": [
+        [
+          {
+            "node": "Set - Contoh Naskah",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Contoh Naskah": {
+      "main": [
+        [
+          {
+            "node": "Set - Brand Guidelines & Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1188d9d7-a1ec-47b5-8344-dbce4ec48f2d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6d18c21e74ebb3cdb26022a26ae9b002bab6b1c78d59b7e91d9fb0e15411b71"
+  },
+  "nodeGroups": [],
+  "id": "QojTpVFNJmRRp6Hz",
+  "tags": []
+}

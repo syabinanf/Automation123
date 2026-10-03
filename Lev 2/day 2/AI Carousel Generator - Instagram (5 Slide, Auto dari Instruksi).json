@@ -1,0 +1,270 @@
+{
+  "name": "AI Carousel Generator - Instagram (5 Slide, Auto dari Instruksi)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d6d3d249-d317-49fe-a2e7-c18aacf67bcb",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        48
+      ],
+      "webhookId": "carousel-generator-chat",
+      "notes": "Testing: klik 'Open Chat' di n8n, ketik contoh: 'aku mau bikin carousel tentang dunia ai'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "Topik",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "Jumlah_Slide",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "s4",
+              "name": "Nama_Brand",
+              "value": "Kementrian Hak Asasi Manusia",
+              "type": "string"
+            },
+            {
+              "id": "s5",
+              "name": "Instagram_Handle",
+              "value": "@kementerian_ham",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "Standar_Carousel",
+              "type": "string",
+              "value": "STRUKTUR WAJIB 5 SLIDE:\nSlide 1 (HOOK) - Headline besar & provokatif/mengejutkan terkait topik, maksimal 8 kata, bikin orang berhenti scroll.\nSlide 2-4 (KONTEN/VALUE) - Satu ide besar per slide, alur naratif nyambung (masalah -> insight -> contoh/data), teks singkat (maks 20 kata per slide).\nSlide 5 (CTA) - Ajakan bertindak jelas (follow, DM, daftar program, dst), sertakan handle Instagram brand.\n\nGAYA VISUAL WAJIB UNTUK image_prompt (semua slide):\n- SELALU sertakan frasa \"professional social media graphic design / poster style, NOT an illustration, NOT photorealistic\" di setiap image_prompt.\n- Background flat/solid warna brand: [isi warna primary, contoh: #0A2540] -- bukan foto atau gradient rumit.\n- Headline/teks utama ditulis eksplisit dalam prompt, contoh: \"bold white sans-serif headline text saying '[isi teks]'\", dan sebutkan posisinya (top/center/bottom).\n- Logo brand kecil di [isi posisi logo, contoh: pojok kanan bawah] -- sebutkan di tiap image_prompt.\n- Elemen pendukung (ikon/grafis) simpel dan minimalis, bukan ilustrasi detail.\n- Sebutkan aspect ratio \"portrait 4:5\" dan \"high contrast, clean negative space\" di setiap prompt.\n- Slide HOOK: font raksasa, dominan teks. Slide KONTEN: hierarki teks (subheading + body pendek) + 1 ikon simpel. Slide CTA: teks ajakan besar + logo diperbesar + handle Instagram kelihatan jelas.\n\nTONE OF VOICE: [isi tone of voice brand, contoh: profesional tapi approachable], Bahasa [isi bahasa utama, contoh: Indonesia] untuk teks on-image."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d1103e02-764c-4027-8b4d-3b545df16da8",
+      "name": "Set - Standar Carousel & Brand Guideline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        48
+      ],
+      "notes": "TEMPLATE UNIVERSAL -- ganti semua teks dalam [ ] sesuai brand/perusahaan masing-masing peserta. Struktur 5 slide-nya (Hook/Konten/CTA) bisa dipakai brand apa aja, cuma detail visualnya yang beda-beda."
+    },
+    {
+      "parameters": {
+        "name": "={{ 'Slide ' + $('Split Out - Per Slide').item.json.slide_number + ' - ' + $('Split Out - Per Slide').item.json.role + '.png' }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "GANTI_DENGAN_FOLDER_ID_TUJUAN"
+        },
+        "options": {}
+      },
+      "id": "375d4f72-e2f2-4d43-9cca-c61e98bcf9db",
+      "name": "Google Drive - Upload Slide Carousel",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1504,
+        48
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "AodxxY2nlIaM7t1j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-image-1-mini"
+        },
+        "prompt": "={{ $json.image_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        48
+      ],
+      "id": "58b7baa7-a6d7-4b10-9f02-b4391ffafff0",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "==Kamu adalah AI Carousel Planner untuk {{ $json.Nama_Brand }} (handle Instagram: {{ $json.Instagram_Handle }}). Dari topik yang diberikan user, rancang carousel Instagram {{ $json.Jumlah_Slide }} slide sesuai standar berikut:\n\n{{ $json.Standar_Carousel }}\n\nPENTING: untuk field image_prompt, WAJIB ikuti persis bagian \"GAYA VISUAL WAJIB\" di atas kata demi kata, termasuk frasa \"professional social media graphic design / poster style, NOT an illustration\". Jangan bikin prompt yang menghasilkan gaya ilustrasi bebas.\n\nBalas HANYA dalam format JSON valid, tanpa markdown atau penjelasan tambahan, dengan struktur persis seperti ini:\n{\"slides\":[{\"slide_number\":1,\"role\":\"HOOK\",\"on_image_text\":\"...\",\"image_prompt\":\"...\",\"caption_notes\":\"...\"},{\"slide_number\":2,\"role\":\"KONTEN\",\"on_image_text\":\"...\",\"image_prompt\":\"...\",\"caption_notes\":\"...\"}],\"instagram_caption\":\"...\"}"
+            },
+            {
+              "content": "={{ $json.Topik }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        48
+      ],
+      "id": "5b2306f4-34cc-4d25-92c0-6f9d9123830d",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.slides",
+        "options": {}
+      },
+      "id": "754a4ad3-c996-4be1-af59-865f1018b753",
+      "name": "Split Out - Per Slide",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b97e3d4-bc61-48e1-83d4-76679ac8055c",
+              "name": "output",
+              "value": "={{ JSON.parse($json.output[0].content[0].text.replace(/```json|```/g, '').trim())  }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        816,
+        48
+      ],
+      "id": "3bc66df9-cc3b-487e-aa05-94d663b0d93c",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Set - Standar Carousel & Brand Guideline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Standar Carousel & Brand Guideline": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out - Per Slide": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out - Per Slide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "31f3640e-f555-4c41-8d66-596891698c7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6d18c21e74ebb3cdb26022a26ae9b002bab6b1c78d59b7e91d9fb0e15411b71"
+  },
+  "nodeGroups": [],
+  "id": "0wFduVYDrUSyLxHn",
+  "tags": []
+}

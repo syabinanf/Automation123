@@ -1,0 +1,1842 @@
+{
+  "name": "Dashboard Data API (Google Sheets)",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "ig-comment",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        304
+      ],
+      "id": "282c713d-f110-48eb-9995-f0426b3bc8d0",
+      "name": "IG Webhook",
+      "webhookId": "e6b3dcec-246c-4e79-989d-5d0d2d30c835"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aedbd54a-cb52-44b0-a249-0c9bb67d880d",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "08c57f24-ef8f-4a82-9516-cb6f2324a7d0",
+              "leftValue": "={{ $json.query.hub_verify_token }}",
+              "rightValue": "testtest",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        256
+      ],
+      "id": "2419e9cd-c771-448c-ba00-83f368baf259",
+      "name": "Verifikasi Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('IG Webhook').item.json.query.hub_challenge }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        240
+      ],
+      "id": "d2b79703-ae92-494d-933f-b98816f060b0",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000000-0000-0000-0000-000000000001",
+              "name": "eventType",
+              "value": "={{ $json.body?.entry?.[0]?.changes?.[0]?.field }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-0000-0000-000000000002",
+              "name": "commentId",
+              "value": "={{ $json.body?.entry?.[0]?.changes?.[0]?.value?.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-0000-0000-000000000003",
+              "name": "commentText",
+              "value": "={{ $json.body?.entry?.[0]?.changes?.[0]?.value?.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-0000-0000-000000000004",
+              "name": "mediaId",
+              "value": "={{ $json.body?.entry?.[0]?.changes?.[0]?.value?.media?.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-0000-0000-000000000005",
+              "name": "igUserId",
+              "value": "={{ $json.body?.entry?.[0]?.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-0000-0000-000000000006",
+              "name": "commenterId",
+              "value": "={{ $json.body?.entry?.[0]?.changes?.[0]?.value?.from?.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-0000-0000-000000000007",
+              "name": "commenterUsername",
+              "value": "={{ $json.body?.entry?.[0]?.changes?.[0]?.value?.from?.username }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        448
+      ],
+      "id": "99031ea7-f562-409d-946d-6d194435f7fb",
+      "name": "Ambil Data Komentar",
+      "notes": "Pengganti node Code. Semua field diambil pakai expression, tanpa JavaScript."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c3000000-0000-0000-0000-000000000001",
+              "leftValue": "={{ $json.eventType }}",
+              "rightValue": "comments",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c3000000-0000-0000-0000-000000000002",
+              "leftValue": "={{ $json.commentText }}",
+              "rightValue": "ai",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        448
+      ],
+      "id": "4ac860c8-e3fc-48fc-bd3f-7cd40964bb8e",
+      "name": "Apakah Cocok?",
+      "notes": "Filter keyword ada di sini. Tambah kondisi baru lewat tombol Add condition. Case sensitive sudah dimatikan."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Riwayat percakapan sebelumnya dengan user ini:\n{{ $json.baris_riwayat || '(belum ada riwayat sebelumnya, ini komentar pertama)' }}\n\nKomentar/pesan baru dari user:\n{{ $('Ambil Data Komentar').item.json.commentText }}",
+        "options": {
+          "systemMessage": "# MAXY Academy AI Customer Service Playbook\n\n## Role\nKamu adalah AI Customer Service MAXY Academy yang bertugas membantu calon peserta mendapatkan informasi mengenai Bootcamp, Workshop, dan program pelatihan digital. Berikan jawaban yang ramah, profesional, dan mudah dipahami.\n\n## Objective\n- Menjawab pertanyaan berdasarkan Knowledge Base yang tersedia.\n- Membantu calon peserta memahami program yang ditawarkan.\n- Mengarahkan pengguna untuk melakukan pendaftaran apabila tertarik.\n- Meningkatkan awareness terhadap Bootcamp MAXY melalui balasan komentar dan DM secara otomatis.\n- Menghubungkan pengguna ke Human Agent jika informasi tidak tersedia atau membutuhkan bantuan lebih lanjut.\n\n---\n\n## Communication Style\n- Gunakan Bahasa Indonesia.\n- Sapa pengguna dengan \"Kak\".\n- Gunakan nada yang ramah, sopan, dan antusias.\n- Jawaban singkat dan jelas (maksimal 3 paragraf).\n- Gunakan emoji secukupnya agar terasa natural.\n\n---\n\n## Rules\n- Selalu gunakan informasi dari Knowledge Base sebagai sumber jawaban.\n- Jangan mengarang informasi yang tidak tersedia.\n- Jangan memberikan harga, jadwal, atau promo yang tidak terdapat pada Knowledge Base.\n- Jika tidak yakin terhadap jawaban, jangan menebak.\n- Jika pertanyaan berada di luar Knowledge Base, arahkan ke Human Agent.\n\n---\n\n## Instagram Comment Automation\n\n### Rule 1 - Keyword \"AI\"\nApabila pengguna memberikan komentar yang mengandung kata berikut:\n- ai\n- AI\n\nMaka balas komentar secara singkat:\n\n> Hai Kak 👋 Terima kasih sudah tertarik dengan AI! 🤖\n> MAXY Academy memiliki berbagai Bootcamp AI yang dirancang untuk pemula maupun profesional. Cek DM ya Kak, kami sudah kirim informasi lengkapnya 😊\n\nKemudian lakukan:\n- Kirim Direct Message (DM) otomatis mengenai Bootcamp AI MAXY.\n- Jangan menjelaskan detail harga atau jadwal jika belum tersedia pada Knowledge Base.\n\n---\n\n### Rule 2 - Pertanyaan tentang Bootcamp MAXY\n\nApabila pengguna bertanya seperti:\n\n- bootcamp maxy apa?\n- ada bootcamp?\n- bootcamp AI?\n- bootcamp data?\n- bootcamp digital?\n- bootcamp digital marketing?\n- bootcamp UI UX?\n- bootcamp software?\n- bootcamp cybersecurity?\n- program maxy apa aja?\n- kelas apa aja?\n\nJawab:\n\n\"Halo Kak 👋\n\nMAXY Academy menyediakan berbagai Bootcamp dan pelatihan digital yang dirancang agar peserta siap menghadapi kebutuhan industri.\n\nSilakan beri tahu bidang yang Kakak minati, nanti saya bantu rekomendasikan program yang paling sesuai 😊\"\n\nJika Knowledge Base memiliki daftar program:\n- tampilkan daftar program.\n\nJika belum ada:\n- jangan mengarang.\n- arahkan ke Human Agent.\n\n---\n\n### Rule 3 - Pengguna Menulis \"Info\"\n\nApabila komentar berisi:\n\n- info\n- minat\n- interested\n- tertarik\n- mau\n- ikut\n- daftar\n\nBalas:\n\n\"Terima kasih Kak 😊\nKami sudah mengirim informasi lengkap melalui DM ya. Silakan dicek, dan jika ada pertanyaan saya siap membantu.\"\n\nKemudian kirim DM otomatis.\n\n---\n\n### Rule 4 - DM Follow Up\n\nJika pengguna masuk ke DM setelah berasal dari komentar Instagram, awali percakapan dengan:\n\n\"Halo Kak 👋\n\nTerima kasih sudah tertarik dengan program MAXY Academy.\n\nSaya siap membantu memberikan informasi mengenai Bootcamp, Workshop, jadwal, sertifikat, maupun proses pendaftaran 😊\"\n\n---\n\n## Greeting\n\nJika pengguna mengucapkan:\n\"Halo\", \"Hi\", \"Pagi\", \"Siang\", atau \"Malam\"\n\nBalas dengan:\n\n\"Halo Kak 👋\n\nSelamat datang di MAXY Academy.\n\nSaya siap membantu memberikan informasi mengenai Bootcamp, Workshop, jadwal, sertifikat, maupun proses pendaftaran.\n\nSilakan sampaikan pertanyaan Kakak 😊\"\n\n---\n\n## Responding Guidelines\n\n### Pertanyaan Harga\n- Gunakan informasi pada Knowledge Base.\n- Jangan membuat harga sendiri.\n- Setelah menjawab, tawarkan bantuan mengenai jadwal atau pendaftaran.\n\n### Pertanyaan Jadwal\n- Jawab sesuai Knowledge Base.\n- Tanyakan program yang diminati.\n\n### Sertifikat\n- Jelaskan sesuai Knowledge Base.\n\n### Metode Pembayaran\n- Jawab sesuai Knowledge Base.\n\n### Pendaftaran\n- Arahkan ke website atau admin sesuai informasi pada Knowledge Base.\n\n### Pertanyaan Umum tentang Bootcamp\nApabila pengguna hanya bertanya:\n\n- bootcamp apa aja?\n- ada kelas apa?\n- program apa saja?\n- MAXY Academy itu apa?\n\nJawab dengan memperkenalkan MAXY Academy dan arahkan pengguna untuk memilih bidang yang diminati. Jangan memberikan daftar program apabila belum tersedia pada Knowledge Base.\n\n---\n\n## Escalation Rules\n\nApabila:\n\n- AI tidak menemukan jawaban pada Knowledge Base.\n- Pengguna meminta berbicara dengan admin.\n- Pengguna mengajukan kerja sama.\n- Pengguna melakukan komplain.\n- Pengguna meminta refund.\n- Pengguna meminta informasi yang tidak dimiliki AI.\n\nBalas:\n\n\"Maaf Kak, saya belum memiliki informasi tersebut.\n\nSaya akan meneruskan percakapan ini kepada tim Customer Service agar dapat membantu lebih lanjut.\n\nMohon tunggu sebentar ya 😊\"\n\nKemudian lakukan handoff ke Human Agent.\n\n---\n\n## Closing\n\nJika percakapan telah selesai, balas:\n\n\"Terima kasih sudah menghubungi MAXY Academy 😊\n\nSemoga informasi yang saya berikan bermanfaat.\n\nSampai jumpa di kelas dan semoga harinya menyenangkan!\"\n\n---\n\n## Knowledge Base\n\n(Belum ada data Knowledge Base yang terhubung ke agent ini. Jika belum ada informasi spesifik mengenai harga, jadwal, sertifikat, daftar program, atau promo yang tersedia di sini, JANGAN mengarang jawaban. Gunakan Escalation Rules dan arahkan pengguna ke Human Agent.)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        608
+      ],
+      "id": "eecf2a89-4fef-4f0f-8140-b1eccce19b89",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        816
+      ],
+      "id": "32e2b43e-9dad-42dd-ae68-badb90c2b326",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v24.0/{{ $('Ambil Data Komentar').item.json.igUserId }}/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "IGAAT4eWPE18lBZAGJwUl9HLVNiQzRHckE0RHlSVG9zWUtoZAGxtRFVzUWV6Q1VoMVJVdW1ZAMU81X0xtRms4cmVyY0VUaERncTA3U081LWhIcVFrUEJpY3RoZAi1ldTNCUWtUZAlowbUhOUVBYS3RxeWk5OUlvcG5vblJEVTZAiZATNLZAwZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify({ recipient: { comment_id: $('Ambil Data Komentar').item.json.commentId }, messaging_type: 'RESPONSE', message: { text: $json.output } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        608
+      ],
+      "id": "bba59a54-db02-42ae-b596-5726e386e1bc",
+      "name": "Kirim DM Instagram",
+      "notes": "Access token lama sudah bocor di file JSON sebelumnya. Revoke dan ganti."
+    },
+    {
+      "parameters": {
+        "content": "## Auto Reply Komen ke DM Instagram — Data Lead + Memory Chat di Google Sheets\n\n",
+        "height": 784,
+        "width": 1664
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "baedb002-6be9-4961-bba9-cb9beacd5169",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129943791,
+          "mode": "list",
+          "cachedResultName": "ig_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1129943791"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        288,
+        720
+      ],
+      "id": "01e3081c-d35e-4c53-8ed2-ce7bd8c25990",
+      "name": "Cari Lead Existing",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Cari baris commenter ini kalau sudah pernah ada. alwaysOutputData ON supaya alur tetap jalan walau lead ini baru (belum ada barisnya)."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2084cc7-e918-4a99-a0ec-c6d0702613c1",
+              "name": "total_interactions_baru",
+              "value": "={{ $json.total_interactions ? Number($json.total_interactions) + 1 : 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "bd954684-f72d-4447-8b75-812c78f27fab",
+              "name": "first_comment_final",
+              "value": "={{ $json.first_comment_text || $('Ambil Data Komentar').item.json.commentText }}",
+              "type": "string"
+            },
+            {
+              "id": "1b90a9fc-5a9b-4846-8339-c7a5b5e7df95",
+              "name": "created_at_final",
+              "value": "={{ $json.created_at || $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        720
+      ],
+      "id": "939c3fed-5ead-485c-9dab-0167a655a774",
+      "name": "Hitung Interaksi",
+      "notes": "Kalau lead lama: +1 dari angka lama. Kalau lead baru: mulai dari 1. Cuma if/else sederhana, bukan loop."
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129943791,
+          "mode": "list",
+          "cachedResultName": "ig_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1129943791"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "commenter_id": "={{ $json.commenter_id }}",
+            "commenter_username": "={{ $json.commenter_username }}",
+            "first_comment_text": "={{ $json.first_comment_text }}",
+            "last_comment_id": "={{ $json.last_comment_id }}",
+            "last_comment_text": "={{ $json.last_comment_text }}",
+            "media_id": "={{ $json.media_id }}",
+            "keyword_matched": "={{ $json.keyword_matched }}",
+            "total_interactions": "={{ $json.total_interactions }}",
+            "funnel_stage": "={{ $json.funnel_stage }}",
+            "funnel_reasoning": "={{ $json.funnel_reasoning }}",
+            "classified_at": "={{ $json.classified_at }}",
+            "last_interaction_at": "={{ $json.last_interaction_at }}",
+            "created_at": "={{ $json.created_at }}"
+          },
+          "matchingColumns": [
+            "commenter_id"
+          ],
+          "schema": [
+            {
+              "id": "commenter_id",
+              "displayName": "commenter_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "commenter_username",
+              "displayName": "commenter_username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_comment_text",
+              "displayName": "first_comment_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_comment_text",
+              "displayName": "last_comment_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_comment_id",
+              "displayName": "last_comment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keyword_matched",
+              "displayName": "keyword_matched",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_interactions",
+              "displayName": "total_interactions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "funnel_stage",
+              "displayName": "funnel_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "funnel_reasoning",
+              "displayName": "funnel_reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "classified_at",
+              "displayName": "classified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_interaction_at",
+              "displayName": "last_interaction_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1024,
+        736
+      ],
+      "id": "5f1c5dfe-7623-4048-8531-40d0b0a2485c",
+      "name": "Simpan Lead ke Database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Sengaja TIDAK menulis kolom funnel_stage/funnel_reasoning/classified_at di sini, supaya nilai yang sudah diisi workflow Klasifikasi tidak tertimpa tiap ada komentar baru. Kalau ternyata kolom itu malah ikut kosong setelah lead lama komentar lagi, kabari saya."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1171128562,
+          "mode": "list",
+          "cachedResultName": "chat_history",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1171128562"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        368,
+        432
+      ],
+      "id": "81cffcac-855d-48c7-bd35-55f43b187284",
+      "name": "Ambil Riwayat Chat",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dc3c7ad5-1817-42d0-bf76-f76e3767fdfe",
+              "leftValue": "={{ $json.commenter_id }}",
+              "rightValue": "={{ $('Ambil Data Komentar').item.json.commenterId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        432
+      ],
+      "id": "bb8a7078-0f3e-479c-bd0d-b9b9271fc866",
+      "name": "Saring Riwayat Saya",
+      "alwaysOutputData": true,
+      "notes": "alwaysOutputData ON — kalau ini komentar pertama dari orang ini, hasilnya nol baris, tapi alur harus tetap lanjut ke AI Agent."
+    },
+    {
+      "parameters": {
+        "maxItems": 10,
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        688,
+        432
+      ],
+      "id": "f2244913-908b-45ac-89a3-080aeeb3316c",
+      "name": "Batasi 10 Terakhir",
+      "notes": "Menggantikan contextWindowLength: 10 dari Postgres Chat Memory yang lama."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4f8ffacd-8f87-4065-9427-14207ec78bd0",
+              "name": "baris_riwayat",
+              "value": "={{ $json.user_message ? ('User: ' + $json.user_message + '\\nAI: ' + $json.ai_message) : '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        432
+      ],
+      "id": "ee2560a8-5e57-4571-aa4d-8f6d0bbfd5e8",
+      "name": "Format Baris Riwayat"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "baris_riwayat"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        432
+      ],
+      "id": "47d472a7-78b2-41ad-b8e2-221abf695120",
+      "name": "Gabungkan Riwayat",
+      "notes": "Kalau field hasil bukan 'baris_riwayat', sesuaikan referensi di node AI Agent (text field)."
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        1040
+      ],
+      "id": "70abbe9d-8673-4166-9caf-e928bbc42815",
+      "name": "Jadwal Klasifikasi (Tiap 3 Jam)"
+    },
+    {
+      "parameters": {
+        "text": "=Komentar pertama: {{ $json.first_comment_text }}\nKomentar terakhir: {{ $json.last_comment_text }}\nKata kunci yang memicu: {{ $json.keyword_matched }}\nJumlah total interaksi: {{ $json.total_interactions }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "funnel_stage",
+              "description": "Tahap funnel pemasaran lead ini. HARUS salah satu dari tiga nilai persis: TOFU, MOFU, atau BOFU.\n- TOFU (Top of Funnel): sekadar penasaran, komentar generik/singkat (mis. cuma \"ai\"), belum menunjukkan pertanyaan spesifik apapun tentang bootcamp.\n- MOFU (Middle of Funnel): sudah bertanya hal spesifik seperti harga, jadwal, silabus, sertifikat, atau membandingkan dengan bootcamp lain, tapi belum menyatakan niat mendaftar.\n- BOFU (Bottom of Funnel): sudah menyatakan niat konkret untuk mendaftar/ikut, menanyakan cara pendaftaran, bilang \"mau daftar\"/\"gimana caranya ikut\"/\"saya minat banget\", atau sudah berulang kali berinteraksi dengan nada serius.",
+              "required": true
+            },
+            {
+              "name": "funnel_reasoning",
+              "description": "Alasan singkat (maksimal satu kalimat, dalam Bahasa Indonesia) kenapa lead ini masuk ke tahap tersebut.",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Kamu adalah AI yang bertugas mengklasifikasikan lead Instagram MAXY Academy (edtech AI di Indonesia) ke salah satu tahap funnel pemasaran berdasarkan riwayat komentar mereka. Baca konteks yang diberikan dengan cermat lalu tentukan tahap yang paling sesuai."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.1,
+      "position": [
+        576,
+        1040
+      ],
+      "id": "acc0ad9e-2f6a-4b76-b6c2-32ccf1eaa71f",
+      "name": "Klasifikasi TOFU MOFU BOFU"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129943791,
+          "mode": "list",
+          "cachedResultName": "ig_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1129943791"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        144,
+        1040
+      ],
+      "id": "2c8d83ef-134a-4fb9-93ae-7d278a216c89",
+      "name": "Ambil Semua Lead dari Sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "33d51741-d7fa-4ef2-8d2d-a49c02262c7d",
+              "leftValue": "={{ $json.funnel_stage }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "fc18df30-f3f4-4d3f-991d-d95bd3f951d6",
+              "leftValue": "={{ $json.last_interaction_at }}",
+              "rightValue": "={{ $json.classified_at }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        1040
+      ],
+      "id": "480f9618-e42f-469a-b66d-f1c69737a46c",
+      "name": "Saring Lead Perlu Diklasifikasi",
+      "notes": "Menggantikan WHERE SQL: funnel_stage kosong ATAU last_interaction_at lebih baru dari classified_at."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129943791,
+          "mode": "list",
+          "cachedResultName": "ig_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1129943791"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "commenter_id": "={{ $('Ambil Semua Lead dari Sheet').item.json.commenter_id }}",
+            "commenter_username": "={{ $('Ambil Semua Lead dari Sheet').item.json.commenter_username }}",
+            "last_comment_text": "={{ $('Ambil Semua Lead dari Sheet').item.json.last_comment_text }}",
+            "first_comment_text": "={{ $('Ambil Semua Lead dari Sheet').item.json.first_comment_text }}",
+            "last_comment_id": "={{ $('Ambil Semua Lead dari Sheet').item.json.last_comment_text }}",
+            "media_id": "={{ $('Ambil Semua Lead dari Sheet').item.json.media_id }}",
+            "keyword_matched": "={{ $('Ambil Semua Lead dari Sheet').item.json.keyword_matched }}",
+            "total_interactions": "={{ $('Ambil Semua Lead dari Sheet').item.json.total_interactions }}",
+            "funnel_stage": "={{ $('Ambil Semua Lead dari Sheet').item.json.funnel_stage }}",
+            "funnel_reasoning": "={{ $('Ambil Semua Lead dari Sheet').item.json.funnel_reasoning }}",
+            "classified_at": "={{ $('Ambil Semua Lead dari Sheet').item.json.classified_at }}",
+            "last_interaction_at": "={{ $('Ambil Semua Lead dari Sheet').item.json.last_interaction_at }}",
+            "created_at": "={{ $('Ambil Semua Lead dari Sheet').item.json.created_at }}"
+          },
+          "matchingColumns": [
+            "commenter_id"
+          ],
+          "schema": [
+            {
+              "id": "commenter_id",
+              "displayName": "commenter_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "commenter_username",
+              "displayName": "commenter_username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_comment_text",
+              "displayName": "first_comment_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_comment_text",
+              "displayName": "last_comment_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_comment_id",
+              "displayName": "last_comment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keyword_matched",
+              "displayName": "keyword_matched",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_interactions",
+              "displayName": "total_interactions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "funnel_stage",
+              "displayName": "funnel_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "funnel_reasoning",
+              "displayName": "funnel_reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "classified_at",
+              "displayName": "classified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_interaction_at",
+              "displayName": "last_interaction_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1008,
+        1040
+      ],
+      "id": "cbc5dc65-d7c2-40e2-a4fa-21b64a3dffa5",
+      "name": "Update Klasifikasi Lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "commenter_id diambil langsung dari node Filter (bukan dari output Information Extractor), jadi aman walau field lain tidak ikut ter-passthrough."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        1312
+      ],
+      "id": "70c47f10-25e1-4adf-beaf-bbcdb155994e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Klasifikasi Lead — TOFU / MOFU / BOFU (Google Sheets)\n\n",
+        "height": 460,
+        "width": 1600
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        960
+      ],
+      "id": "8db02566-6eb2-488f-b9e9-af9743b86b30",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        224
+      ],
+      "id": "9d127b5a-d2f7-4eed-898f-143267ebbc08",
+      "name": "Jadwal Laporan (Senin 08:00)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "625f266a-6a65-4d1b-97b0-955843d46e3a",
+              "name": "ringkasan_lead",
+              "value": "={{ $json.commenter_username }} — Tahap: {{ $json.funnel_stage || 'BELUM' }} — Keyword: {{ $json.keyword_matched }} — Interaksi: {{ $json.total_interactions }}x — Komentar terakhir: \"{{ $json.last_comment_text }}\" — Dibuat: {{ $json.created_at }} — Terakhir aktif: {{ $json.last_interaction_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2016,
+        224
+      ],
+      "id": "33c7853c-8da4-4fe7-a5c8-718adca0ebb9",
+      "name": "Buat Ringkasan per Lead",
+      "notes": "Cuma menggabungkan field jadi satu baris teks per lead. Tidak ada logika."
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "ringkasan_lead"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        224
+      ],
+      "id": "580eb0fa-fd7b-4cc8-b502-dadd742bd46f",
+      "name": "Gabungkan Semua Ringkasan",
+      "notes": "Menyatukan semua baris lead jadi satu blok teks (dipisah baris baru) dalam satu item, supaya AI Agent bisa baca semuanya sekaligus. Kalau field hasil bukan 'ringkasan_lead', sesuaikan referensi di node AI Agent."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ target: '08133303704', message: $json.output, connectOnly: false }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2768,
+        224
+      ],
+      "id": "9234b6f1-0ce1-4157-9a3b-ac6e814f957e",
+      "name": "Kirim Laporan ke WhatsApp (Fonnte)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GyZmxMEw15PvBeRA",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "Ganti nomor placeholder dengan nomor tujuan asli. $json.output adalah teks balasan AI Agent."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129943791,
+          "mode": "list",
+          "cachedResultName": "ig_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1129943791"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1792,
+        224
+      ],
+      "id": "a87a2a79-f515-475b-8180-2101be82f562",
+      "name": "Ambil Semua Lead",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Laporan Mingguan WA — Versi AI Agent (bukan SQL, bukan Filter/Summarize manual)\n\n",
+        "height": 424,
+        "width": 1424
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        144
+      ],
+      "id": "ba9724db-a163-418e-b168-6ec2cd13ffd3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "25ada237-8ca9-4ebc-a0f7-37c934c22732",
+              "name": "session_id",
+              "value": "={{ $('Ambil Data Komentar').item.json.igUserId }}",
+              "type": "string"
+            },
+            {
+              "id": "58d3bd74-babc-470d-9eb4-87d11f8a80e3",
+              "name": "user_message",
+              "value": "={{ $('Ambil Data Komentar').item.json.commenterUsername }}",
+              "type": "string"
+            },
+            {
+              "id": "85a01864-f5ec-4279-8b06-f12660b73b98",
+              "name": "ai_message",
+              "value": "={{ $('AI Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "7eab21db-8e5b-4ee8-859d-f409240e8872",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        608
+      ],
+      "id": "20ff79ec-77b5-4f1d-a5fb-ac46968d53bd",
+      "name": "Siapkan Data Riwayat",
+      "notes": "Field di sini namanya harus PERSIS sama dengan header kolom di sheet chat_history."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1171128562,
+          "mode": "list",
+          "cachedResultName": "chat_history",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1171128562"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.session_id }}",
+            "user_message": "={{ $json.user_message }}",
+            "ai_message": "={{ $json.ai_message }}",
+            "timestamp": "={{ $json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_message",
+              "displayName": "user_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_message",
+              "displayName": "ai_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1328,
+        608
+      ],
+      "id": "7e2e2b6b-0efc-4a55-85d2-f200b3b9ed4d",
+      "name": "Simpan Riwayat Chat1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1cca83ae-2e41-4070-be1b-884d9a17c2f2",
+              "name": "commenter_id",
+              "value": "={{ $json.commenter_id }}",
+              "type": "string"
+            },
+            {
+              "id": "3de39726-4e02-4593-9a23-76571223eb88",
+              "name": "commenter_username",
+              "value": "={{ $json.commenter_username }}",
+              "type": "string"
+            },
+            {
+              "id": "bda60f65-d536-452c-8dd0-20fb77692ab0",
+              "name": "first_comment_text",
+              "value": "={{ $json.first_comment_final }}",
+              "type": "string"
+            },
+            {
+              "id": "c70263d3-09d5-4450-8143-6688533585d2",
+              "name": "last_comment_text",
+              "value": "={{ $json.last_comment_text }}",
+              "type": "string"
+            },
+            {
+              "id": "d367759d-a3ea-4e0a-82f8-4f26285a5062",
+              "name": "last_comment_id",
+              "value": "={{ $json.last_comment_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0564ec70-0964-42e6-abad-9a25ee1d2d18",
+              "name": "media_id",
+              "value": "={{ $json.media_id }}",
+              "type": "string"
+            },
+            {
+              "id": "357726de-5029-4ce4-aeab-1e1ffe53a6f5",
+              "name": "keyword_matched",
+              "value": "={{ $json.keyword_matched }}",
+              "type": "string"
+            },
+            {
+              "id": "c28b3885-562e-4bee-8b37-d0c3cb7d92fc",
+              "name": "total_interactions",
+              "value": "={{ $json.total_interactions_baru }}",
+              "type": "number"
+            },
+            {
+              "id": "b6fb52a6-8d87-4239-8944-2ecb9a5bd5e2",
+              "name": "last_interaction_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "af5d4381-4899-4d49-96c1-e3081028b1d2",
+              "name": "created_at",
+              "value": "={{ $json.created_at_final }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        736
+      ],
+      "id": "b79913c4-6891-44d0-a664-06e1027585c3",
+      "name": "Siapkan Data Lead",
+      "notes": "Field di sini namanya harus PERSIS sama dengan header kolom di sheet ig_leads, supaya autoMapInputData di node berikutnya bisa mencocokkan otomatis."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo-0125",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo-0125"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2352,
+        432
+      ],
+      "id": "20a5cf87-ecd2-44c6-905a-f2f2ff7b210a",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tanggal hari ini: {{ $now.toFormat('yyyy-MM-dd') }}\n\nData lead:\n{{ $json.concatenated_ringkasan_lead }}",
+        "options": {
+          "systemMessage": "Kamu adalah asisten yang menyusun laporan mingguan WhatsApp untuk tim MAXY Academy, berdasarkan data lead Instagram yang diberikan.\n\nSetiap baris data mewakili satu lead, dengan format:\nusername — Tahap: TOFU/MOFU/BOFU/BELUM — Keyword: ... — Interaksi: Nx — Komentar terakhir: \"...\" — Dibuat: tanggal — Terakhir aktif: tanggal\n\nSusun laporan WhatsApp dengan format PERSIS seperti ini, isi angka sesuai hasil hitung kamu dari data, JANGAN mengarang atau menambah data yang tidak ada:\n\n*Laporan Mingguan Instagram Leads*\n_MAXY Academy_\n\nTotal lead: *[jumlah total baris data]*\nLead baru (7 hari terakhir): *[jumlah lead dengan tanggal Dibuat dalam 7 hari terakhir dari Tanggal Hari Ini]*\n\nTOFU: [jumlah] | MOFU: [jumlah] | BOFU: [jumlah] | Belum diklasifikasi: [jumlah Tahap=BELUM]\n\n*Kata kunci teratas:*\n[daftar maksimal 5 keyword yang paling sering muncul, urutkan dari terbanyak, format: - keyword: N lead]\n\n*Hot leads siap follow-up (BOFU):*\n[daftar maksimal 10 lead dengan Tahap=BOFU, urutkan dari yang paling baru Terakhir aktif, format: - username (Nx interaksi): \"komentar terakhir\". Kalau tidak ada, tulis '(belum ada BOFU minggu ini)']\n\nHitung semua angka dengan teliti dan cermat berdasarkan data yang diberikan — jangan perkirakan. Jangan tambahkan kalimat pembuka, penutup, atau penjelasan apapun di luar format laporan ini."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2464,
+        224
+      ],
+      "id": "ae2ddfb3-8dca-4a90-829f-d42c654ee32b",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "path": "ig-leads-dashboard-data",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1600,
+        736
+      ],
+      "id": "a778b1b4-4db8-4bd2-85f4-57b606d2b6df",
+      "name": "Dashboard Data Webhook",
+      "webhookId": "55c6f286-4909-4613-97a8-e57b43248c92"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2320,
+        736
+      ],
+      "id": "33a44049-ce4d-48a8-8358-1c647eb73822",
+      "name": "Kirim Data JSON",
+      "notes": "respondWith = allIncomingItems -> otomatis balikin semua baris jadi satu array JSON, tanpa perlu expression manual. Header CORS wajib ada supaya dashboard HTML bisa fetch dari luar n8n."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ",
+          "mode": "list",
+          "cachedResultName": "ig_leads_starter (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129943791,
+          "mode": "list",
+          "cachedResultName": "ig_leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K5T504ayYsuWwsu7PlSx_zIt7emwePQci76v0RC1QJQ/edit#gid=1129943791"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1920,
+        736
+      ],
+      "id": "c5e349f9-61cc-49cb-8481-b882a9929179",
+      "name": "Ambil Semua Lead1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Dashboard Data API (Google Sheets)\n\n",
+        "height": 356,
+        "width": 1208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        592
+      ],
+      "id": "5381a842-b58f-4921-bef0-b634434cfbd2",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "IG Webhook": {
+      "main": [
+        [
+          {
+            "node": "Verifikasi Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ambil Data Komentar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifikasi Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Data Komentar": {
+      "main": [
+        [
+          {
+            "node": "Apakah Cocok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apakah Cocok?": {
+      "main": [
+        [
+          {
+            "node": "Cari Lead Existing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ambil Riwayat Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Kirim DM Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cari Lead Existing": {
+      "main": [
+        [
+          {
+            "node": "Hitung Interaksi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hitung Interaksi": {
+      "main": [
+        [
+          {
+            "node": "Siapkan Data Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Riwayat Chat": {
+      "main": [
+        [
+          {
+            "node": "Saring Riwayat Saya",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saring Riwayat Saya": {
+      "main": [
+        [
+          {
+            "node": "Batasi 10 Terakhir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batasi 10 Terakhir": {
+      "main": [
+        [
+          {
+            "node": "Format Baris Riwayat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Baris Riwayat": {
+      "main": [
+        [
+          {
+            "node": "Gabungkan Riwayat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gabungkan Riwayat": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jadwal Klasifikasi (Tiap 3 Jam)": {
+      "main": [
+        [
+          {
+            "node": "Ambil Semua Lead dari Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Klasifikasi TOFU MOFU BOFU": {
+      "main": [
+        [
+          {
+            "node": "Update Klasifikasi Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Semua Lead dari Sheet": {
+      "main": [
+        [
+          {
+            "node": "Saring Lead Perlu Diklasifikasi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saring Lead Perlu Diklasifikasi": {
+      "main": [
+        [
+          {
+            "node": "Klasifikasi TOFU MOFU BOFU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Klasifikasi TOFU MOFU BOFU",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jadwal Laporan (Senin 08:00)": {
+      "main": [
+        [
+          {
+            "node": "Ambil Semua Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buat Ringkasan per Lead": {
+      "main": [
+        [
+          {
+            "node": "Gabungkan Semua Ringkasan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gabungkan Semua Ringkasan": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Semua Lead": {
+      "main": [
+        [
+          {
+            "node": "Buat Ringkasan per Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim DM Instagram": {
+      "main": [
+        [
+          {
+            "node": "Siapkan Data Riwayat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siapkan Data Riwayat": {
+      "main": [
+        [
+          {
+            "node": "Simpan Riwayat Chat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siapkan Data Lead": {
+      "main": [
+        [
+          {
+            "node": "Simpan Lead ke Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Kirim Laporan ke WhatsApp (Fonnte)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dashboard Data Webhook": {
+      "main": [
+        [
+          {
+            "node": "Ambil Semua Lead1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Semua Lead1": {
+      "main": [
+        [
+          {
+            "node": "Kirim Data JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1ca1547e-d52d-4cee-8b5b-38d5c8204cd5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6d18c21e74ebb3cdb26022a26ae9b002bab6b1c78d59b7e91d9fb0e15411b71"
+  },
+  "nodeGroups": [],
+  "id": "qeoEW0ovwoU7AHBW",
+  "tags": []
+}

@@ -1,0 +1,944 @@
+{
+  "name": "🎬 AI Video Creation — GSheet Input to Drive Output",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4d26207b-0392-4494-9633-17adbbb764fe",
+      "name": "▶️ Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        384,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc",
+          "mode": "list",
+          "cachedResultName": "AI-Video-Creation-Input-Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1938336977,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit#gid=1938336977"
+        },
+        "options": {}
+      },
+      "id": "2e56da24-436e-485f-a30d-d2b37b3eb512",
+      "name": "📊 Baca dari Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        624,
+        1696
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### 🔑 Kalau operation \"read\" gak muncul field yang cocok\nDi versi n8n kamu, dropdown **Operation** node ini mungkin namanya beda (misal \"Get Row(s) in Sheet\"). Pilih itu, lalu di bagian bawah pastikan header sheet-nya persis: `carousel_content, topic, tone, duration, platform` — biar field mapping di node berikutnya otomatis ketemu.",
+        "height": 324,
+        "width": 300,
+        "color": 3
+      },
+      "id": "51baa59e-6b53-45cf-a8ce-7259ea6fe8de",
+      "name": "🔑 Catatan Google Sheets",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        768,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎬 AI Video Creation Workflow (Google Sheets Input)\n**Cara pakai:**\n1. Buka Google Sheet kamu, isi/edit baris ke-2 (baris pertama setelah header) dengan konten yang mau ditest:\n\n| A: carousel_content | B: topic | C: tone | D: duration | E: platform |\n|---|---|---|---|---|\n\n2. Klik **Execute Workflow** di n8n (tombol play di bawah kanvas)\n3. Mau ganti konten? Tinggal edit lagi baris itu di Sheet, lalu Execute Workflow lagi\n\n**Output:** Video Script + Storyboard + Voice Over Script (cek node ✅ Compile Final Output setelah run)\n\n⚠️ **Setup:**\n- Credential *Google Sheets* → assign ke node 📊 Baca dari Google Sheet\n- Credential *OpenAI API* → assign ke 3 node HTTP Request (🎬🎨🎙️)\n- Isi `documentId` & `sheetName` di node 📊 Baca dari Google Sheet",
+        "height": 660,
+        "width": 380,
+        "color": 5
+      },
+      "id": "1c6ac58e-88cc-46be-84da-fd6c5a8d584e",
+      "name": "📋 Cara Pakai1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        336,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "var-001",
+              "name": "carousel_content",
+              "value": "={{ $json.carousel_content || 'Tidak ada konten yang diberikan' }}",
+              "type": "string"
+            },
+            {
+              "id": "var-002",
+              "name": "topic",
+              "value": "={{ $json.topic || 'Konten Marketing' }}",
+              "type": "string"
+            },
+            {
+              "id": "var-003",
+              "name": "tone",
+              "value": "={{ $json.tone || 'Profesional dan Engaging' }}",
+              "type": "string"
+            },
+            {
+              "id": "var-004",
+              "name": "duration",
+              "value": "={{ $json.duration || '60 detik' }}",
+              "type": "string"
+            },
+            {
+              "id": "var-005",
+              "name": "platform",
+              "value": "={{ $json.platform || 'Instagram Reels / TikTok' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9adce1bc-6978-4e6d-85be-427811ca1298",
+      "name": "⚙️ Set Variables1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  model: \"gpt-4o-mini\",\n  temperature: 0.7,\n  max_tokens: 2000,\n  messages: [\n    {\n      role: \"system\",\n      content: \"Kamu adalah video scriptwriter profesional Indonesia yang berpengalaman membuat konten viral untuk media sosial. Tugas kamu adalah mengubah konten carousel atau caption menjadi video script yang terstruktur, menarik, dan siap diproduksi. Gunakan bahasa yang natural dan sesuai platform.\"\n    },\n    {\n      role: \"user\",\n      content: \"Buat VIDEO SCRIPT yang lengkap dan menarik berdasarkan konten carousel/caption berikut:\\n\\n📌 KONTEN CAROUSEL/CAPTION:\\n\" + $json.carousel_content +\n        \"\\n\\n📋 PARAMETER VIDEO:\\n- Topik: \" + $json.topic +\n        \"\\n- Tone/Gaya: \" + $json.tone +\n        \"\\n- Durasi Target: \" + $json.duration +\n        \"\\n- Platform: \" + $json.platform +\n        \"\\n\\nBuat video script LENGKAP dengan format berikut:\\n\\n## 🎬 VIDEO SCRIPT\\n\\n**JUDUL VIDEO:**\\n[Judul yang click-worthy dan menarik]\\n\\n**HOOK (0-3 detik):**\\n[Kalimat/aksi pembuka yang langsung grab attention dalam 3 detik pertama]\\n\\n---\\n\\n**SCENE 1 - [Nama Scene] ([Timestamp]):**\\n🎥 Visual: [Deskripsi detail apa yang terlihat di kamera - shot type, gerakan, dll]\\n🎙️ Narasi: [Kalimat yang diucapkan]\\n📝 On-Screen Text: [Teks yang muncul di layar]\\n\\n**SCENE 2 - [Nama Scene] ([Timestamp]):**\\n🎥 Visual: [Deskripsi visual]\\n🎙️ Narasi: [Narasi]\\n📝 On-Screen Text: [Teks layar]\\n\\n(Tambahkan scene sesuai kebutuhan untuk mencapai durasi \" + $json.duration + \")\\n\\n---\\n\\n**CALL TO ACTION ([Timestamp terakhir]):**\\n🎥 Visual: [Visual CTA]\\n🎙️ Narasi: [CTA yang diucapkan dengan kuat]\\n📝 On-Screen Text: [Teks CTA + username/link]\\n\\n---\\n\\n**PRODUCTION NOTES:**\\n🎵 Musik: [Rekomendasi genre/mood musik yang cocok]\\n🎨 Visual Style: [Gaya visual dan color palette]\\n✂️ Editing Pacing: [Saran kecepatan cut dan transisi]\\n📱 Format: [Spesifikasi format untuk \" + $json.platform + \"]\"\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "d099e54a-8312-4be9-b29e-b6233086c9cb",
+      "name": "🎬 Generate Video Script1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        1696
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "script-001",
+              "name": "video_script",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "script-002",
+              "name": "carousel_content",
+              "value": "={{ $node['⚙️ Set Variables1'].json.carousel_content }}",
+              "type": "string"
+            },
+            {
+              "id": "script-003",
+              "name": "topic",
+              "value": "={{ $node['⚙️ Set Variables1'].json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "script-004",
+              "name": "tone",
+              "value": "={{ $node['⚙️ Set Variables1'].json.tone }}",
+              "type": "string"
+            },
+            {
+              "id": "script-005",
+              "name": "duration",
+              "value": "={{ $node['⚙️ Set Variables1'].json.duration }}",
+              "type": "string"
+            },
+            {
+              "id": "script-006",
+              "name": "platform",
+              "value": "={{ $node['⚙️ Set Variables1'].json.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "script-007",
+              "name": "script_tokens_used",
+              "value": "={{ $json.usage?.total_tokens || 0 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd78a07c-e9fc-46b7-bbf4-e711af0f4cb8",
+      "name": "📝 Extract Script1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  model: \"gpt-4o-mini\",\n  temperature: 0.7,\n  max_tokens: 2500,\n  messages: [\n    {\n      role: \"system\",\n      content: \"Kamu adalah storyboard artist profesional yang berpengalaman dalam produksi video untuk media sosial. Tugas kamu adalah mengubah video script menjadi storyboard visual yang detail, praktis, dan mudah dipahami oleh tim produksi.\"\n    },\n    {\n      role: \"user\",\n      content: \"Buat STORYBOARD VISUAL yang detail berdasarkan video script berikut:\\n\\n\" + $json.video_script +\n        \"\\n\\nPlatform Target: \" + $json.platform +\n        \"\\n\\nBuat storyboard dengan format berikut:\\n\\n## 🎨 STORYBOARD\\n\\n**STYLE GUIDE:**\\n📱 Aspect Ratio: [Rasio untuk \" + $json.platform + \"]\\n🎨 Color Palette: [3-5 warna hex utama]\\n✍️ Typography: [Font style dan ukuran]\\n💡 Lighting: [Panduan pencahayaan keseluruhan]\\n\\n---\\n\\n**PANEL 1 - [Nama Scene] | [Timestamp]**\\n📐 Shot Type: [Extreme Close Up / Close Up / Medium / Wide / Extreme Wide]\\n🖼️ Komposisi: [Deskripsi detail apa yang ada di frame - foreground, midground, background]\\n👤 Subjek: [Posisi dan aksi subjek/talent]\\n🎨 Warna & Lighting: [Mood warna dan pencahayaan spesifik scene ini]\\n🔤 Teks/Grafis: [Posisi dan style teks overlay jika ada]\\n📷 Gerakan Kamera: [Static / Pan / Tilt / Zoom / Dolly / dll]\\n⏱️ Durasi: [X detik]\\n🔄 Transisi ke Panel Berikutnya: [Cut / Fade / Dissolve / Wipe / dll]\\n\\n**PANEL 2 - [Nama Scene] | [Timestamp]**\\n📐 Shot Type: [Tipe shot]\\n🖼️ Komposisi: [Deskripsi komposisi]\\n👤 Subjek: [Posisi subjek]\\n🎨 Warna & Lighting: [Mood]\\n🔤 Teks/Grafis: [Teks overlay]\\n📷 Gerakan Kamera: [Gerakan]\\n⏱️ Durasi: [X detik]\\n🔄 Transisi: [Jenis transisi]\\n\\n(Lanjutkan untuk setiap scene)\\n\\n---\\n\\n**SHOT LIST SUMMARY:**\\n[Daftar singkat semua shot yang dibutuhkan untuk efisiensi produksi]\\n\\n**PROPS & EQUIPMENT:**\\n🎥 Peralatan: [Kamera, lensa, stabilizer yang direkomendasikan]\\n🎭 Props: [Properti yang dibutuhkan]\\n💡 Lighting Setup: [Setup pencahayaan yang direkomendasikan]\"\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "22142bb7-4e2c-4279-b3ab-92658ad58a05",
+      "name": "🎨 Generate Storyboard1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1584,
+        1696
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "sb-001",
+              "name": "storyboard",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "sb-002",
+              "name": "video_script",
+              "value": "={{ $node['📝 Extract Script1'].json.video_script }}",
+              "type": "string"
+            },
+            {
+              "id": "sb-003",
+              "name": "carousel_content",
+              "value": "={{ $node['📝 Extract Script1'].json.carousel_content }}",
+              "type": "string"
+            },
+            {
+              "id": "sb-004",
+              "name": "topic",
+              "value": "={{ $node['📝 Extract Script1'].json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "sb-005",
+              "name": "platform",
+              "value": "={{ $node['📝 Extract Script1'].json.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "sb-006",
+              "name": "storyboard_tokens_used",
+              "value": "={{ $json.usage?.total_tokens || 0 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b38c67e9-aba4-4bf4-8aff-731a42ee2730",
+      "name": "🖼️ Extract Storyboard1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  model: \"gpt-4o-mini\",\n  temperature: 0.6,\n  max_tokens: 2000,\n  messages: [\n    {\n      role: \"system\",\n      content: \"Kamu adalah voice over scriptwriter profesional. Kamu ahli membuat VO script yang natural, enak didengar, mudah dibacakan, dan sesuai dengan timing video. Setiap kalimat harus mengalir dengan baik dan tidak kaku.\"\n    },\n    {\n      role: \"user\",\n      content: \"Buat VOICE OVER SCRIPT yang lengkap dan natural berdasarkan video script berikut:\\n\\n\" + $node[\"📝 Extract Script1\"].json.video_script +\n        \"\\n\\nBuat VO script dengan format berikut:\\n\\n## 🎙️ VOICE OVER SCRIPT\\n\\n**PROFIL VOICE OVER:**\\n🎤 Karakter Suara: [Deskripsi tone dan karakter suara ideal - hangat/energetik/profesional/dll]\\n🗣️ Kecepatan Baca: [X words per minute yang direkomendasikan]\\n🌍 Aksen/Dialek: [Bahasa Indonesia standar / regional / dll]\\n\\n---\\n\\n**FULL SCRIPT:**\\n\\n[HOOK | 0-3 detik]\\n[Kalimat VO pembuka — tulis persis seperti akan dibacakan, natural, dan conversational]\\n\\n[BAGIAN 1 | detik X-Y]\\n[Kalimat VO yang mengalir... buat natural seperti berbicara, bukan membaca. Pisahkan dengan baris baru untuk setiap jeda napas alami]\\n\\n[BAGIAN 2 | detik X-Y]\\n[Lanjutan VO...]\\n\\n(Lanjutkan untuk setiap bagian)\\n\\n[CTA | detik terakhir]\\n[Kalimat CTA yang tegas, jelas, dan memorable]\\n\\n---\\n\\n**PANDUAN EMOSI & INTONASI:**\\n\\n[Bagian Hook]:\\n→ Emosi: [Contoh: Penasaran, Energetik, Mengejutkan]\\n→ Intonasi: [Naik/Turun/Datar + penjelasan]\\n→ Kecepatan: [Lambat/Normal/Cepat]\\n\\n[Bagian Isi]:\\n→ Emosi: [Emosi yang cocok]\\n→ Intonasi: [Panduan intonasi]\\n→ Kecepatan: [Kecepatan baca]\\n\\n[CTA]:\\n→ Emosi: [Tegas, Antusias]\\n→ Intonasi: [Naik di akhir untuk engagement]\\n→ Kecepatan: [Sedikit lebih lambat, jelas]\\n\\n---\\n\\n**PRONUNCIATION GUIDE:**\\n[Daftar kata-kata yang perlu panduan pengucapan khusus, singkatan, atau istilah asing]\\n\\n---\\n\\n**STATISTIK:**\\n📝 Total Kata: [Hitung total kata]\\n⏱️ Estimasi Durasi: [Berdasarkan X WPM]\\n🔢 Jumlah Kalimat: [Total kalimat]\"\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "498e2bc3-351f-4a3b-be24-48119c2fd327",
+      "name": "🎙️ Generate Voice Over Script1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2064,
+        1696
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final-001",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "final-002",
+              "name": "generated_at",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "final-003",
+              "name": "topic",
+              "value": "={{ $node['📝 Extract Script1'].json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "final-004",
+              "name": "platform",
+              "value": "={{ $node['📝 Extract Script1'].json.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "final-005",
+              "name": "duration",
+              "value": "={{ $node['📝 Extract Script1'].json.duration }}",
+              "type": "string"
+            },
+            {
+              "id": "final-006",
+              "name": "carousel_content",
+              "value": "={{ $node['📝 Extract Script1'].json.carousel_content }}",
+              "type": "string"
+            },
+            {
+              "id": "final-007",
+              "name": "video_script",
+              "value": "={{ $node['📝 Extract Script1'].json.video_script }}",
+              "type": "string"
+            },
+            {
+              "id": "final-008",
+              "name": "storyboard",
+              "value": "={{ $node['🖼️ Extract Storyboard1'].json.storyboard }}",
+              "type": "string"
+            },
+            {
+              "id": "final-009",
+              "name": "voice_over_script",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "final-010",
+              "name": "total_tokens_used",
+              "value": "={{ ($node['📝 Extract Script1'].json.script_tokens_used || 0) + ($node['🖼️ Extract Storyboard1'].json.storyboard_tokens_used || 0) + ($json.usage?.total_tokens || 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9167c7b1-e341-4fcb-a5b7-307740879a72",
+      "name": "✅ Compile Final Output1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2304,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 📊 Output yang Dihasilkan\n✅ **video_script** — Script lengkap dengan scene by scene\n✅ **storyboard** — Panduan visual setiap panel\n✅ **voice_over_script** — VO script + panduan intonasi\n✅ **total_tokens_used** — Monitor biaya AI\n\n📌 Klik node ini setelah run → tab **Output** di kanan buat lihat hasil lengkapnya.",
+        "height": 364,
+        "width": 300,
+        "color": 4
+      },
+      "id": "c4e5d55f-d2f6-4ed6-9da4-10c4e49793ad",
+      "name": "📊 Output Info1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc",
+          "mode": "list",
+          "cachedResultName": "AI-Video-Creation-Input-Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 53045537,
+          "mode": "list",
+          "cachedResultName": "Output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit#gid=53045537"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "generated_at": "={{ $json.generated_at }}",
+            "topic": "={{ $json.topic }}",
+            "platform": "={{ $json.platform }}",
+            "duration": "={{ $json.duration }}",
+            "video_script": "={{ $json.video_script }}",
+            "storyboard": "={{ $json.storyboard }}",
+            "voice_over_script": "={{ $json.voice_over_script }}",
+            "total_tokens_used": "={{ $json.total_tokens_used }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "generated_at",
+              "displayName": "generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topic",
+              "displayName": "topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_script",
+              "displayName": "video_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "storyboard",
+              "displayName": "storyboard",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "voice_over_script",
+              "displayName": "voice_over_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_tokens_used",
+              "displayName": "total_tokens_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e4d9fa03-6b43-445d-91bf-102aadd9963d",
+      "name": "✍️ Tulis ke Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2528,
+        1696
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc",
+          "mode": "list",
+          "cachedResultName": "AI-Video-Creation-Input-Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Output"
+        },
+        "columns": {
+          "value": {
+            "topic": "={{ $('Filter').item.json.topic }}",
+            "video_status": "Done",
+            "video_drive_link": "={{ $json.webViewLink }}",
+            "image_drive_link": "={{ $('Upload image').item.json.webViewLink }}"
+          },
+          "schema": [
+            {
+              "id": "topic",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "topic",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_status",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "video_status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "video_drive_link",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "video_drive_link",
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "image_drive_link",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "image_drive_link",
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "topic"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "40060ca1-b69b-454f-b592-1aea876cb9e9",
+      "name": "Update row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1488,
+        1984
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wTfTD1jvSWDhGfbX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $now }}_video",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1lA9WhZEvcvQ65LA26DJ-rVyLUC8MNy2i",
+          "mode": "list",
+          "cachedResultName": "image n8n",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1lA9WhZEvcvQ65LA26DJ-rVyLUC8MNy2i"
+        },
+        "options": {}
+      },
+      "id": "533ff2c3-6fcb-47bb-996e-d114ffbb827d",
+      "name": "Upload video",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1232,
+        2032
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "AodxxY2nlIaM7t1j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-001",
+              "operator": {
+                "name": "filter.operator.notEquals",
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "leftValue": "={{ $json.video_status }}",
+              "rightValue": "Done"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f975dc2-6f83-4fee-bf25-8a3a92551065",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        624,
+        2032
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc",
+          "mode": "list",
+          "cachedResultName": "AI-Video-Creation-Input-Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 53045537,
+          "mode": "list",
+          "cachedResultName": "Output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VjH7rA1stw91gnr3WdIHHOgKq6e0y9YlWLVUqBjPnCc/edit#gid=53045537"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "40b39086-ee19-48e4-9474-6bacf9150c45",
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "position": [
+        384,
+        2032
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "YpQfcZfzC0GdvVNa",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "sora-2",
+          "mode": "list",
+          "cachedResultName": "SORA-2"
+        },
+        "prompt": "=Buat video pendek untuk konten social media berikut, dengan gerakan yang halus dan sinematik.\n\nTopik: {{ $('Google Sheets Trigger').item.json.topic }}\nPlatform: {{ $('Google Sheets Trigger').item.json.platform }}\nGaya: sesuai adegan pembuka (hook) dari storyboard berikut — {{ String($('Google Sheets Trigger').item.json.storyboard).slice(0,500) }}\n\nBuat pergerakan kamera yang natural (slow pan atau slight zoom), pencahayaan cerah dan modern, tanpa teks di layar, cocok untuk video vertikal Instagram Reels/TikTok.",
+        "seconds": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        880,
+        2032
+      ],
+      "id": "fecf0c7e-6192-4b67-b50d-774b2200d89c",
+      "name": "Generate a video",
+      "credentials": {
+        "openAiApi": {
+          "id": "fOLTtgMvBiFfnxZ6",
+          "name": "OpenAI account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "▶️ Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "📊 Baca dari Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Baca dari Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Set Variables1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Set Variables1": {
+      "main": [
+        [
+          {
+            "node": "🎬 Generate Video Script1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎬 Generate Video Script1": {
+      "main": [
+        [
+          {
+            "node": "📝 Extract Script1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Extract Script1": {
+      "main": [
+        [
+          {
+            "node": "🎨 Generate Storyboard1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎨 Generate Storyboard1": {
+      "main": [
+        [
+          {
+            "node": "🖼️ Extract Storyboard1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🖼️ Extract Storyboard1": {
+      "main": [
+        [
+          {
+            "node": "🎙️ Generate Voice Over Script1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎙️ Generate Voice Over Script1": {
+      "main": [
+        [
+          {
+            "node": "✅ Compile Final Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Compile Final Output1": {
+      "main": [
+        [
+          {
+            "node": "✍️ Tulis ke Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload video": {
+      "main": [
+        []
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Generate a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate a video": {
+      "main": [
+        [
+          {
+            "node": "Upload video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6cd37b22-1007-4e37-aca0-1f6226a05bbe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6d18c21e74ebb3cdb26022a26ae9b002bab6b1c78d59b7e91d9fb0e15411b71"
+  },
+  "nodeGroups": [],
+  "id": "KK6iHwDslpReOygs",
+  "tags": []
+}
